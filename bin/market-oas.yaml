@@ -1,0 +1,623 @@
+openapi: "3.0.0"
+info:
+  title: Market Place
+  version: "1.0"
+tags:
+  - name: product
+    description: Products added to the Market Place by sellers
+  - name: offer
+    description: Access to offers from buyers
+  - name: message
+    description: Access to the user messages
+  - name: user
+    description: Operations on users
+paths:
+  /products:
+    description: The products posted by sellers
+    get:
+      tags:
+        - product
+      summary: Search for products
+      description: |
+        Search for products using a free query
+      parameters:
+        - name: query
+          description: |
+            A product's name, category, or partial description
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            The products that match the query
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+    post:
+      tags:
+        - product
+      summary: Post a product to sell
+      description: |
+        Post a product using the product object
+        provided
+      requestBody:
+        description: The product object that will be added
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+        required: true
+      responses:
+        "200":
+          description: |
+            The product that was posted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+  /products/{productRef}:
+    parameters:
+      - $ref: "#/components/parameters/productRef"
+    description: A product
+    delete:
+      tags:
+        - product
+      summary: Remove a product
+      description: |
+        Remove the product with the product reference from the sellers merchindise
+      responses:
+        "200":
+          description: A successful operation --The product deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+    patch:
+      tags:
+        - product
+      summary: Update product
+      description: |
+        Update a product in the seller's merchindise using
+         the product's reference
+      requestBody:
+        $ref: "#/components/requestBodies/updateProduct"
+      responses:
+        "200":
+          description: The updated product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+  /products/{productRef}/getProductOwner:
+    parameters:
+      - $ref: "#/components/parameters/productRef"
+    description: A product's owner
+    get:
+      summary: Get a products's owner
+      description: Get the seller from the product's reference
+      tags:
+        - product
+        - user
+      responses:
+        "200":
+          description: Succesful operation --contains a user object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /products/{productRef}/getProductImages:
+    parameters:
+      - $ref: "#/components/parameters/productRef"
+    description: A products images
+    get:
+      summary: Returns product's images
+      description: Returns a array of images
+      tags:
+        - product
+      responses:
+        "200":
+          description: Succesful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    file:
+                      type: string
+                      description: A binary representation of a file
+                      format: binary
+  /product/{productRef}/addImage:
+    parameters:
+      - $ref: "#/components/parameters/productRef"
+    description: A product's images
+    post:
+      summary: Add images
+      description: Add images from array
+      tags:
+        - product
+      requestBody:
+        $ref: "#/components/requestBodies/arrayOfImages"
+      responses:
+        "200":
+          description: Succesful Operation
+
+  /users/{username}/getAllProducts:
+    parameters:
+      - $ref: "#/components/parameters/username"
+    description: Get all the products posted by a user
+    get:
+      tags:
+        - user
+      summary: Get all products
+      description: Gell all the products from a username
+      responses:
+        "200":
+          description: Succesful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+  /offers/{offerRef}:
+    parameters:
+      - $ref: "#/components/parameters/offerRef"
+    description: Operations using an offer's reference
+    put:
+      tags:
+        - offer
+      summary: Accept offer
+      description: Accept an offer made on an item
+      responses:
+        "202":
+          description: Succesfully accepted offer
+    delete:
+      tags:
+        - offer
+      summary: Reject offer
+      description: Reject an offer made on a product
+      responses:
+        "202":
+          description: Succesfully rejected offer
+    get:
+      tags:
+        - offer
+      summary: Read offer
+      description: Read an offer made for a product
+      responses:
+        "200":
+          description: Succesful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Offer"
+  /offers/{productRef}/readAll:
+    parameters:
+      - $ref: "#/components/parameters/productRef"
+    description: Read all offers
+    get:
+      tags:
+        - offer
+      summary: Read all offers
+      description: Read all the offers for a specific product
+      responses:
+        "200":
+          description: Succesful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                description: An array of offers
+                items:
+                  $ref: "#/components/schemas/Offer"
+  /offers:
+    description: Operations on offers
+    post:
+      tags:
+        - offer
+      summary: Creat an offer
+      description: Create and send an offer to a seller
+      requestBody:
+        $ref: "#/components/requestBodies/sendOffer"
+      responses:
+        "200":
+          description: A succesful operation
+  /messages:
+    get:
+      tags:
+        - message
+      summary: Get all messages
+      description: Get all the messages
+      responses:
+        "200":
+          description: Succesful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                description: An array of messages
+                items:
+                  $ref: "#/components/schemas/Message"
+    post:
+      tags:
+        - message
+      summary: Send a message
+      description: Send a message to a seller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Message"
+        required: true
+      responses:
+        "201":
+          description: Created message succesfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+  /messages/{messageRef}:
+    parameters:
+      - $ref: "#/components/parameters/messageRef"
+    description: Read message
+    get:
+      tags:
+        - message
+      summary: Read a message
+      description: Read a message with the provided reference
+      responses:
+        "200":
+          description: Succesfully read message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+  /users:
+    post:
+      tags:
+        - user
+      summary: Create a user
+      description: Register a user account
+      requestBody:
+        $ref: "#/components/requestBodies/createUser"
+      responses:
+        "201":
+          description: Returns the created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      tags:
+        - user
+      summary: Upload image
+      description: Upload a profile image
+      requestBody:
+        $ref: "#/components/requestBodies/uploadImage"
+      responses:
+        "201":
+          description: Image succesfully uploaded
+    delete:
+      tags:
+        - user
+      summary: Delete account
+      description: Delete a user account
+      responses:
+        "200":
+          description: Succesfully deleted user
+    patch:
+      tags:
+        - user
+      summary: Update user
+      description: Update the user account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          description: Succesfully updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/logout:
+    post:
+      tags:
+        - user
+      summary: Log user out
+      description: Logs a user out
+      responses:
+        "200":
+          description: Succesfully logged out user
+  /users/login:
+    post:
+      tags:
+        - user
+      summary: Log user in
+      description: Logs a user in
+      responses:
+        "200":
+          description: Succesfully logged in user
+  /users/logoutAll:
+    post:
+      tags:
+        - user
+      summary: Log all devices out
+      description: Log user out from all devices
+      responses:
+        "200":
+          description: Succesfully logged out from all devices
+  /users/{username}/getImage:
+    parameters:
+      - $ref: "#/components/parameters/username"
+    get:
+      summary: Get image by username
+      description: Get  a user's image by his username
+      tags:
+        - user
+      responses:
+        "200":
+          description: Succesfully returned image
+          content:
+            application/json:
+              schema:
+                type: string
+                description: A binary representation of a file
+                format: binary
+
+#
+#
+##------------- components
+components:
+  #request
+  requestBodies:
+    arrayOfImages:
+      description: An array of images
+      content:
+        application/json:
+          schema:
+            type: array
+            description: Array of images
+            items:
+              type: string
+              description: A binary representation of an image
+              format: binary
+    uploadImage:
+      description: An image url
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              file:
+                type: string
+                description: file to upload
+                format: binary
+              metadata:
+                type: string
+                description: Data for handling the image
+    createUser:
+      description: A user object
+      content:
+        application/json:
+          schema:
+            type: object
+            description: The seller or buyer
+            required:
+              - username
+              - password
+              - email
+            properties:
+              password:
+                type: string
+                format: password
+              username:
+                type: string
+              email:
+                type: string
+      required: true
+    updateProduct:
+      description: The products properties that will be updated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              description:
+                type: string
+                maxLength: 700
+                description: A 700 character description of the product
+              imageUrls:
+                type: array
+                items:
+                  type: string
+              name:
+                type: string
+                description: The name of the product
+              condition:
+                $ref: "#/components/schemas/Condition"
+              price:
+                type: integer
+                description: The price of the product
+    sendOffer:
+      description: A offer needs only offerAmount, buyerReference, and productRef
+      content:
+        application/json:
+          schema:
+            properties:
+              offerAmount:
+                type: number
+                description: The dollar amount being offered for the product
+              productRef:
+                type: string
+                description: The identifier for the product
+              buyerReference:
+                type: string
+                description: A reference to the user sending the offer
+  #params
+  parameters:
+    messageRef:
+      name: messageRef
+      in: path
+      required: true
+      description: A message reference
+      schema:
+        type: string
+    offerRef:
+      name: offerRef
+      in: path
+      required: true
+      description: An offer for a product
+      schema:
+        type: string
+    username:
+      name: username
+      in: path
+      required: true
+      description: The user's username
+      schema:
+        type: string
+        format: username
+    productRef:
+      name: productRef
+      in: path
+      required: true
+      description: Product's reference
+      schema:
+        type: string
+  #schemas
+  schemas:
+    Product:
+      type: object
+      description: A product
+      required:
+        - reference
+        - name
+        - imageUrls
+        - condition
+        - price
+        - description
+        - dateAdded
+      properties:
+        description:
+          type: string
+          maxLength: 700
+          description: A 700 character description of the product
+        reference:
+          type: string
+          description: The product's identifier
+        imageUrls:
+          type: array
+          items:
+            type: string
+        name:
+          type: string
+          description: The name of the product
+        condition:
+          $ref: "#/components/schemas/Condition"
+        dateAdded:
+          type: string
+          format: date
+          description: The date the item was posted
+        price:
+          type: integer
+          description: The price of the product
+    Condition:
+      description: The condition of a product
+      type: string
+      enum:
+        - New
+        - Very good
+        - Good
+        - Acceptable
+        - Poor
+    User:
+      type: object
+      description: The seller or buyer
+      required:
+        - username
+      properties:
+        reference:
+          description: An identifier for the user
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        profileImageUrl:
+          description: The user's profile image
+          type: string
+          format: uri
+        username:
+          type: string
+    Offer:
+      type: object
+      description: An offer for a product
+      required:
+        - reference
+        - productRef
+        - offerAmount
+      properties:
+        offerAmount:
+          type: number
+          description: The dollar amount being offered for the product
+        productRef:
+          type: string
+          description: The identifier for the product
+        reference:
+          type: string
+          description: The offer's identifier
+        offerViewed:
+          type: boolean
+          description: Has the offer been viewed?
+        offerAccepted:
+          type: boolean
+          description: Has the offer been accepted?
+        offerRejected:
+          type: boolean
+          description: Has the offer been rejected?
+        offerDate:
+          type: string
+          format: date
+          description: The date the offer was posted
+        message:
+          type: string
+          maxLength: 250
+          description: A message to the seller concerning the offer
+        buyerReference:
+          type: string
+          description: A reference to the user sending the offer
+    Message:
+      type: object
+      description: A message
+      required:
+        - senderRef
+        - recipientRef
+        - text
+      properties:
+        senderRef:
+          type: string
+          description: The sender's reference (username)
+        recipientRef:
+          type: string
+          description: The recipient reference (username)
+        text:
+          type: string
+          maxLength: 700
+          description: The message body
+        date:
+          type: string
+          format: date
+          description: The date the message was sent
