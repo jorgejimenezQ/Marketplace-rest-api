@@ -32,11 +32,10 @@ router.post('/users', async (req, res) => {
         await user.save()
         //TODO: Create a handler for user images
 
+        // Generate token and get user profile
         const token = await user.generateToken()
-        console.log(token)
         const profile = await user.createProfile()
 
-        // const profile = 'sdf'
         res.send({ user: profile, token: token })
     } catch (e) {
         res.status(400).send({
@@ -46,7 +45,7 @@ router.post('/users', async (req, res) => {
 })
 
 // Get user's account
-router.get('/users', authenticate, async (req, res) => {
+router.get('/users/getAccount', authenticate, async (req, res) => {
     try {
         res.send()
     } catch (e) {
@@ -75,6 +74,10 @@ router.get('/users/:username/getUser', async (req, res) => {
     try {
         // Find the user and create a profile of the user's account
         const user = await User.findOne({ username })
+        if (!user) {
+            res.status(404).send('User not found.')
+        }
+
         const profile = await user.createProfile()
 
         res.send(profile)

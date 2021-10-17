@@ -1,6 +1,7 @@
 const validator = require('validator')
 const mongoose = require('mongoose')
 const Message = require('./message.js')
+const Product = require('./product.js')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { description } = require('commander')
@@ -75,19 +76,14 @@ userSchema.methods.toJSON = function () {
 //     * product's itemRef
 userSchema.methods.createProfile = async function () {
     const user = this // "this" refers to the document
-    await user.populate('messages')
-    console.log(user.messages)
+
     // Populate the user's products
-
-    await user.populate('products')
-    // await user.populate([
-    //     {
-    //         path: 'products',
-    //         select: ['itemRef', 'description', 'name'],
-    //     },
-    // ])
-
-    console.log(user.products)
+    await user.populate([
+        {
+            path: 'products',
+            select: ['itemRef', 'description', 'name'],
+        },
+    ])
 
     const prof = {
         username: user.username,
@@ -97,6 +93,7 @@ userSchema.methods.createProfile = async function () {
 
     return prof
 }
+
 // Generates and returns a JSON Token
 userSchema.methods.generateToken = async function () {
     // "this" refers to the document
