@@ -10,15 +10,20 @@ const authenticate = async (req, res, next) => {
         // Decode the data from the token
         const tokenData = jwt.verify(token, process.env.JWT_SECRET)
 
-        console.log(token)
-        console.log(tokenData)
-
+        // Use the token and tokenData to search for an existing account
         const user = await User.findOne({
             _id: tokenData._id,
             'tokens.token': token,
         })
 
-        console.log(user)
+        // If it doesn't exist throw an error
+        if (!user) {
+            throw new Error()
+        }
+
+        // Add the user and the token to the request object
+        req.token = token
+        req.user = user
 
         next()
     } catch (e) {

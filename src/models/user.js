@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema(
             required: true,
             unique: true,
         },
-        imageUrl: { type: String, required: false },
+        imageUri: { type: String, required: false },
         password: {
             type: String,
             required: true,
@@ -64,6 +64,8 @@ userSchema.methods.toJSON = function () {
     delete user.createdAt
     delete user.updatedAt
     delete user._id
+    delete user.tokens
+    delete user.__v
 
     return user
 }

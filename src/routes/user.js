@@ -6,18 +6,10 @@
  * @summary Operations on users
  * @author Jorge Jimenez <jimenezjorge717@gmail.com>
  *
- * Created at     : 2017-11-03 02:21:56
- * Last modified  : 2018-02-25 15:31:40
  */
 
 const express = require('express')
 const authenticate = require('../middleware/auth.js')
-
-// ---- Router imports
-// const Message = require('../models/message.js')
-// const Condition = require('../models/condition.js')
-// const Offer = require('../models/offer.js')
-// const Product = require('../models/product.js')
 const User = require('../models/user.js')
 const statusCodes = require('../utils/utils.js')
 
@@ -47,9 +39,10 @@ router.post('/users', async (req, res) => {
 // Get user's account
 router.get('/users/getAccount', authenticate, async (req, res) => {
     try {
-        res.send()
+        // console.log(data)
+        res.send(req.user)
     } catch (e) {
-        res.status(400).send()
+        res.status(400).send('There was a problem.')
     }
 })
 

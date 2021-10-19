@@ -38,6 +38,29 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Product"
+    put:
+      tags:
+        - product
+      summary: Sell a product
+      description: |
+        Handle the operation of selling a user's product
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user
+                - offer
+              properties:
+                user:
+                  $ref: "#/components/schemas/User"
+                offer:
+                  $ref: "#/components/schemas/Offer"
+      responses:
+        "201":
+          description: Succesfully sold item
+
     post:
       tags:
         - product
@@ -166,6 +189,22 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Product"
+  /users/{username}/getUser:
+    parameters:
+      - $ref: "#/components/parameters/username"
+    description: A user
+    get:
+      tags:
+        - user
+      summary: Get a user by username
+      description: Get a user with the user's username
+      responses:
+        "200":
+          description: Succesful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
   /offers/{offerRef}:
     parameters:
       - $ref: "#/components/parameters/offerRef"
@@ -279,6 +318,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
+  # /users/{username}:
+  #   get:
+
   /users:
     post:
       tags:
@@ -290,6 +332,18 @@ paths:
       responses:
         "201":
           description: Returns the created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    get:
+      tags:
+        - user
+      summary: Get a user
+      description: Get a user's account profile
+      responses:
+        "200":
+          description: Successful operation
           content:
             application/json:
               schema:
@@ -345,6 +399,11 @@ paths:
         - user
       summary: Log user in
       description: Logs a user in
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
       responses:
         "200":
           description: Succesfully logged in user
