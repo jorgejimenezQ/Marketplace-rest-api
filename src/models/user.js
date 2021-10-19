@@ -66,6 +66,7 @@ userSchema.methods.toJSON = function () {
     delete user._id
     delete user.tokens
     delete user.__v
+    delete user.email
 
     return user
 }
@@ -83,13 +84,13 @@ userSchema.methods.createProfile = async function () {
     await user.populate([
         {
             path: 'products',
-            select: ['itemRef', 'description', 'name'],
+            select: ['itemNumber', 'description', 'name', 'price', 'imageURLs'],
         },
     ])
 
     const prof = {
         username: user.username,
-        imageUrl: user.imageUrl,
+        image: user.imageUri,
         products: user.products,
     }
 

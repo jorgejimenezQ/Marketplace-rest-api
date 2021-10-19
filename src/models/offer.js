@@ -13,7 +13,7 @@ const offerSchema = new mongoose.Schema(
             ref: 'Product',
             unique: false,
         },
-        buyer: {
+        owner: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
             ref: 'User',

@@ -1,7 +1,6 @@
 const validator = require('validator')
 const mongoose = require('mongoose')
 const User = require('./user.js')
-const Image = require('./image.js')
 
 // ========================================
 // Image schema:
@@ -117,7 +116,7 @@ productSchema.methods.toJSON = function () {
     result.condition = product.condition
     result.price = product.price
     result.category = product.category
-    result.itmeNumber = product.itmeNumber
+    result.itemNumber = product.itemNumber
     result.description = product.description
 
     return result
