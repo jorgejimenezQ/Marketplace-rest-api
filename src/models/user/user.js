@@ -74,6 +74,13 @@ userSchema.methods.toJSON = function () {
     delete user.deleted
     delete user.dateDeleted
 
+    if (!user.imagePath) {
+        user.imagePath = {
+            path: '/default/path/to/image/',
+            name: 'defaultName.jpg',
+        }
+    }
+
     return user
 }
 

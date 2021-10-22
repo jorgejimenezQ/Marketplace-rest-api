@@ -21,6 +21,18 @@ const msgGroupSchema = new mongoose.Schema(
     { timestamps: true },
 )
 
+msgGroupSchema.methods.toJSON = function () {
+    const group = this
+    const groupObj = group.toObject()
+
+    const result = {}
+    result.id = group._id
+    result.user1 = group.user1.toJSON()
+    result.user2 = group.user2.toJSON()
+
+    return result
+}
+
 // Save the messageGroup to the users
 msgGroupSchema.post('save', async function (doc, next) {
     const group = this

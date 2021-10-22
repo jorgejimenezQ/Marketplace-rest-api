@@ -112,10 +112,20 @@ router.delete('/messages/:messageId', authenticate, async (req, res) => {
 router.get('/messages/me/getConversations', authenticate, async (req, res) => {
     try {
         // Get all the UserConversations where the
-        // user is this user
-        const userConv = await UserConversation.find({})
+        // user is this user.
+        const userConv = await UserConversation.find({
+            user: req.user._id,
+        })
+            // Populate messageGroup with users populated also
+            .populate({
+                path: 'messageGroup',
+                populate: { path: 'user1 user2' },
+            })
+            // Select the messageGroup, but not the id field
+            .select('messageGroup -_id')
 
-        res.send()
+        // console.log(userConv)
+        res.send(userConv)
     } catch (e) {
         res.status(400).send({ error: 'Something went wrong', errorMessage: e })
     }
