@@ -38,28 +38,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Product"
-    put:
-      tags:
-        - product
-      summary: Sell a product
-      description: |
-        Handle the operation of selling a user's product
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - user
-                - offer
-              properties:
-                user:
-                  $ref: "#/components/schemas/User"
-                offer:
-                  $ref: "#/components/schemas/Offer"
-      responses:
-        "201":
-          description: Succesfully sold item
 
     post:
       tags:
@@ -100,6 +78,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Product"
+    put:
+      tags:
+        - product
+      summary: Sell a product
+      description: |
+        Handle the operation of selling a user's product
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user
+                - offer
+              properties:
+                user:
+                  $ref: "#/components/schemas/User"
+                offer:
+                  $ref: "#/components/schemas/Offer"
+      responses:
+        "201":
+          description: Succesfully sold item
     patch:
       tags:
         - product
@@ -318,6 +318,53 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
+    delete:
+      tags:
+        - message
+      summary: Delete a message
+      description: Delete a message
+      responses:
+        "200":
+          description: Deleted message
+  /messages/getConversations:
+    get:
+      tags:
+        - message
+      summary: Get all conversations
+      description: Get all conversations for a user
+      responses:
+        "200":
+          description: Succesful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                description: An array of messages
+                items:
+                  $ref: "#/components/schemas/Message"
+  /messages/{messageRef}/reply:
+    parameters:
+      - $ref: "#/components/parameters/messageRef"
+    description: Reply to message
+    post:
+      tags:
+        - message
+      summary: Reply to a message
+      description: Send a reply to a message
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Message"
+        required: true
+      responses:
+        "201":
+          description: Created message succesfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
   # /users/{username}:
   #   get:
 

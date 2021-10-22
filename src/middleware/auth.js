@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const User = require('../models/user.js')
+const User = require('../models/user/user.js')
 
 // Validates the authentication token and adds the
 // authenticated use to the request object

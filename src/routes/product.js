@@ -10,8 +10,8 @@
 
 const express = require('express')
 const authentication = require('../middleware/auth.js')
-const User = require('../models/user.js')
-const Product = require('../models/product.js')
+const User = require('../models/user/user.js')
+const Product = require('../models/product/product.js')
 const authenticate = require('../middleware/auth.js')
 const { validateUpdate } = require('../utils/utils.js')
 
@@ -20,14 +20,18 @@ const router = express.Router()
 // Post a product
 router.post('/products', authenticate, async (req, res) => {
     try {
+        // Create the product fromt he authenticated user and
+        // requesst body content
         const product = new Product({
             owner: req.user._id,
             ...req.body, // Get the request body
         })
 
+        // Generate the item number
         const itemNumber = await product.generateItemNumber()
         product.itemNumber = itemNumber
 
+        //
         await product.save()
         if (!product) {
             res.status(400).send('There was a problem uploading the product.')
@@ -93,7 +97,7 @@ router.patch('/products/:itemNumber', authenticate, async (req, res) => {
 
         // Check if product exists, belongs to the authenticated
         // user, and it's not deleted
-        if (!product || product.removed) throw new Error()
+        if (!product || product.removed || product.sold) throw new Error()
 
         updates.forEach((update) => (product[update] = req.body[update]))
 
@@ -119,7 +123,7 @@ router.get('/products/:itemNumber/getOwner', async (req, res) => {
         }).populate('owner')
 
         // If the product does not exist send error
-        if (!product)
+        if (!product || product.removed)
             return res.status(400).send({ error: 'Product does not exist!' })
 
         // console.log(product.owner)
@@ -130,8 +134,9 @@ router.get('/products/:itemNumber/getOwner', async (req, res) => {
     }
 })
 
-// Retrieve a product's images
-router.get('/products/:itemNumber/getImages', async (req, res) => {
+// Retrieve a product's images. The response will contain an array of
+// image urls
+router.get('/products/:itemNumber/getImagePaths', async (req, res) => {
     try {
         // Find the product with the itemNumber
         const product = await Product.findOne({
@@ -139,11 +144,11 @@ router.get('/products/:itemNumber/getImages', async (req, res) => {
         })
 
         // If the product does not exist send error
-        if (!product)
+        if (!product || product.removed)
             return res.status(400).send({ error: 'Product does not exist!' })
 
         // The product's "images" is an array of paths, and names
-        const images = product.imageURLs
+        const images = product.imagePaths
 
         res.send(images)
     } catch (error) {
@@ -165,14 +170,14 @@ router.put('/products/:itemNumber', authenticate, async (req, res) => {
 
         // If product does not exist
         // or product has already been removed
-        if (!product || product.sold) throw new Error()
+        if (!product || product.removed || product.sold) throw new Error()
 
         // If product exists under user account, set sold to true
         product.sold = true
         product.dateSold = Date.now() // set the dateSold to today
         await product.save()
 
-        res.send(product)
+        res.send({ user: req.user.username, product: product })
     } catch (e) {
         res.status(400).send({ error: 'Something went wrong' })
     }

@@ -1,10 +1,10 @@
 const validator = require('validator')
 const mongoose = require('mongoose')
-const Message = require('./message.js')
-const Product = require('./product.js')
+const Message = require('../message/message.js')
+const Product = require('../product/product.js')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const { description } = require('commander')
+const imageSchema = require('../image/image.js')
 
 const userSchema = new mongoose.Schema(
     {
@@ -18,11 +18,14 @@ const userSchema = new mongoose.Schema(
             required: true,
             unique: true,
         },
-        imageUri: { type: String, required: false },
+        emailIsVerified: { type: Boolean, default: false },
+        imagePath: { type: imageSchema, required: false },
         password: {
             type: String,
             required: true,
         },
+        deleted: { type: Boolean, default: false },
+        dateDeleted: Date,
         profileImage: Buffer,
         tokens: [
             {
@@ -67,6 +70,9 @@ userSchema.methods.toJSON = function () {
     delete user.tokens
     delete user.__v
     delete user.email
+    delete user.emailIsVerified
+    delete user.deleted
+    delete user.dateDeleted
 
     return user
 }
@@ -84,18 +90,26 @@ userSchema.methods.createProfile = async function () {
     await user.populate([
         {
             path: 'products',
-            select: ['itemNumber', 'description', 'name', 'price', 'imageURLs'],
+            select: [
+                'itemNumber',
+                'description',
+                'name',
+                'price',
+                'imagePaths',
+            ],
         },
     ])
 
     const prof = {
         username: user.username,
-        image: user.imageUri,
+        image: user.imagePath,
         products: user.products,
     }
 
     return prof
 }
+
+userSchema.methods.removeToken = async function (tokeId) {}
 
 // Generates and returns a JSON Token
 userSchema.methods.generateToken = async function () {
@@ -131,7 +145,6 @@ userSchema.statics.getAccount = async (email, password) => {
 // run the pre method. It has to be used with the document -–The instance of the Model.
 userSchema.pre('save', async function (next) {
     const user = this
-
     if (user.isModified('password')) {
         user.password = await bcrypt.hashSync(user.password, 8)
     }

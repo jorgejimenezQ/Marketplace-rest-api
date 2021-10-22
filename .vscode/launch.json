@@ -5,6 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch Program",
+            "program": "${workspaceFolder}/src/index.js",
+            "request": "launch",
+            "skipFiles": ["<node_internals>/**"],
+            "type": "pwa-node",
+            "env": {
+                "PORT": "3000",
+                "MONGODB_URL": "mongodb://127.0.0.1:27017/marketplace-api",
+                "JWT_SECRET": "cju2342-mlkapw28-lkviemn-@sdf345"
+            }
+        },
+        {
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",

@@ -1,35 +1,7 @@
 const validator = require('validator')
 const mongoose = require('mongoose')
-const User = require('./user.js')
-
-// ========================================
-// Image schema:
-// Will be used as a subdocument for the
-// product schema
-// ========================================
-const imageSchema = new mongoose.Schema(
-    {
-        path: { type: String, required: true },
-        name: { type: String, required: true },
-        deleted: Boolean,
-    },
-    {
-        toObject: {
-            transform: (doc, ret) => {
-                delete ret._id
-            },
-        },
-    },
-)
-
-imageSchema.methods.toJSON = function () {
-    const image = this
-    const imageObj = image.toObject()
-
-    delete imageObj._id
-
-    return imageObj
-}
+const User = require('../user/user.js')
+const imageSchema = require('../image/image.js')
 
 // =============================
 // P R O D U C T    S C H E M A
@@ -50,7 +22,7 @@ const productSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        imageURLs: [imageSchema],
+        imagePaths: [{ type: imageSchema, required: false }],
         name: {
             type: String,
             required: true,
@@ -111,7 +83,7 @@ productSchema.methods.toJSON = function () {
     const result = {}
 
     result.owner = product.owner.username
-    result.images = product.imageURLs.toObject()
+    result.imagePaths = product.imagePaths.toObject()
     result.name = product.name
     result.condition = product.condition
     result.price = product.price
