@@ -9,7 +9,6 @@
  */
 
 const express = require('express')
-const authentication = require('../middleware/auth.js')
 const User = require('../models/user/user.js')
 const Product = require('../models/product/product.js')
 const authenticate = require('../middleware/auth.js')

@@ -71,7 +71,7 @@ router.post('/messages', authenticate, async (req, res) => {
 
         res.send(message.toMessageBlock(req.user))
     } catch (e) {
-        console.log(e)
+        // console.log(e)
         res.status(400).send({
             error: 'Something went wrong',
             errorMessage: e.message,

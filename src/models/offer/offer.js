@@ -11,7 +11,6 @@ const offerSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             required: true,
             ref: 'Product',
-            unique: false,
         },
         owner: {
             type: mongoose.Schema.Types.ObjectId,
@@ -19,21 +18,36 @@ const offerSchema = new mongoose.Schema(
             ref: 'User',
         },
         offerAccepted: { type: Boolean, required: false, default: false },
+        dateAccepted: Date,
+        dataViewed: Date,
+        dateRejected: Date,
         offerViewed: { type: Boolean, required: false, default: false },
         offerRejected: { type: Boolean, required: false, default: false },
-        // message: {
-        //     type: String,
-        //     required: true,
-        //     validate(value) {
-        //         if (value.length > 250)
-        //             throw Error(
-        //                 'An offer message can only be up to 250 characters',
-        //             )
-        //     },
-        // },
     },
-    { timestamps: true },
+    { timestamps: true }
 )
+
+// Returns an offer block
+
+offerSchema.methods.toOfferBlock = function (
+    product,
+    productOwner,
+    offerOwner
+) {
+    const prodBlock = product.toProductBlock(productOwner)
+    return {
+        product: prodBlock,
+        offer: {
+            owner: {
+                username: offerOwner.username,
+                imageUrl: offerOwner.imagePath.url,
+            },
+            amount: this.offerAmount,
+            isViewed: this.offerViewed,
+            isRejected: this.offerRejected,
+        },
+    }
+}
 
 const Offer = mongoose.model('Offer', offerSchema)
 module.exports = Offer
