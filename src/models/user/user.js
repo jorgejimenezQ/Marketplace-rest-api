@@ -74,12 +74,12 @@ userSchema.methods.toJSON = function () {
     delete user.deleted
     delete user.dateDeleted
 
-    if (!user.imagePath) {
-        user.imagePath = {
-            path: '/default/path/to/image/',
-            name: 'defaultName.jpg',
-        }
-    }
+    // if (!user.imagePath) {
+    //     user.imagePath = {
+    //         path: USER_PLACEHOLDER_PATH,
+    //         name: USER_PLACEHOLDER_NAME,
+    //     }
+    // }
 
     return user
 }
@@ -154,6 +154,13 @@ userSchema.pre('save', async function (next) {
     const user = this
     if (user.isModified('password')) {
         user.password = await bcrypt.hashSync(user.password, 8)
+    }
+
+    if (!user.imagePath) {
+        user.imagePath = {
+            path: process.env.USER_PLACEHOLDER_PATH,
+            name: process.env.USER_PLACEHOLDER_NAME,
+        }
     }
 
     next()

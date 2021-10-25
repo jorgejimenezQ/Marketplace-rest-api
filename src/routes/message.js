@@ -22,15 +22,33 @@ const UserConversation = require('../models/message/userConversation.js')
 
 const router = new express.Router() // Router constructor
 
-// Send a message
+// Creates a conversation with the message passed
+// returns a message block to the client. The message block will
+// be the following:
+// {
+//     users: {
+//         from: {
+//             username: owner.username,
+//             imageUrl: owner.imagePath.url,
+//         },
+//         to: {
+//             username: recipient.username,
+//             imageUrl: recipient.imagePath.url,
+//         },
+//     },
+//     message: message.messageBody,
+//     conversationId: message.messageGroup._id,
+//     messageId: message._id,
+//     date: message.createdAt,
+//}
 router.post('/messages', authenticate, async (req, res) => {
     try {
         // Find the recipient for the message
         const recipient = await User.findOne({ username: req.body.recipient })
         if (!recipient) {
-            return res
-                .status(400)
-                .send({ error: `The user ${recipient} was not found!` })
+            return res.status(400).send({
+                error: `The user ${req.body.recipient} was not found!`,
+            })
         }
 
         // Create a messageGroup and set the message's id to the
@@ -42,28 +60,27 @@ router.post('/messages', authenticate, async (req, res) => {
 
         await msgGroup.save()
 
-        //
-        // Create an id for the message as well as the messageGroup
-        // const msgId = new mongoose.Types.ObjectId()
         const message = new Message({
             _id: msgGroup._id,
             owner: req.user._id,
-            recipient: recipient._id,
             messageBody: req.body.messageBody,
             messageGroup: msgGroup._id,
-            parent: null, // Set the message as the root message
         })
 
         await message.save()
 
-        // Send a representation of the message
-        res.send(message.toMessage(message, req.user, recipient))
+        res.send(message.toMessageBlock(req.user))
     } catch (e) {
-        res.status(400).send({ error: 'Something went wrong', errorMessage: e })
+        console.log(e)
+        res.status(400).send({
+            error: 'Something went wrong',
+            errorMessage: e.message,
+        })
     }
 })
 
-// Read a message
+// Read a message. Send a message block to the
+// client. See the above route's comment.
 router.get('/messages/:messageId', authenticate, async (req, res) => {
     try {
         // Get the message from db
@@ -74,61 +91,186 @@ router.get('/messages/:messageId', authenticate, async (req, res) => {
             throw new Error()
         }
 
-        // Get the owner and the recipient
-        await message.populate('owner')
-        await message.populate('recipient')
+        // Check that the convresation has not been deleted
+        const conv = await UserConversation.findOne({
+            user: req.user._id,
+            messageGroup: message.messageGroup,
+        })
 
-        // console.log(message.messageGroup)
+        if (conv.deleted) throw new Error()
+
+        // Get the owner
+        await message.populate('owner')
 
         // Send a representation of the message model to the user
-        res.send(message.toMessage(message, message.owner, message.recipient))
+        res.send(message.toMessageBlock(message.owner))
     } catch (e) {
-        res.status(400).send({ error: 'Something went wrong', errorMessage: e })
+        res.status(400).send({
+            error: 'Something went wrong',
+            catchMessage: e.message,
+        })
     }
 })
 
-// Delete a conversation TODO
-router.delete('/messages/:messageId', authenticate, async (req, res) => {
+// Set a user's conversation's deleted to true
+router.delete('/messages/:conversationId', authenticate, async (req, res) => {
     try {
-        // Get the message from db
-        const message = await Message.findById(req.params.messageId)
+        console.log(req.user)
+        // Find the converstion with the username field passed in
+        const conv = await UserConversation.findOne({
+            user: req.user._id,
+            _id: req.params.conversationId,
+        })
 
-        // Did we get anything
-        if (!message || message.deleted) {
-            throw new Error()
-        }
+        if (!conv || conv.deleted) throw new Error()
 
-        message.deleted = true
-        message.dateDeleted = Date.now()
-        await message.save()
+        // Set deleted to true
+        conv.deleted = true
+        conv.dateDeleted = Date.now()
 
+        await conv.save()
+
+        // Set the
         res.send()
     } catch (e) {
-        res.status(400).send({ error: 'Something went wrong', errorMessage: e })
-    }
-})
-
-// Get all the conversations
-router.get('/messages/me/getConversations', authenticate, async (req, res) => {
-    try {
-        // Get all the UserConversations where the
-        // user is this user.
-        const userConv = await UserConversation.find({
-            user: req.user._id,
+        res.status(400).send({
+            error: 'Something went wrong',
+            errorMessage: e.message,
         })
-            // Populate messageGroup with users populated also
-            .populate({
-                path: 'messageGroup',
-                populate: { path: 'user1 user2' },
-            })
-            // Select the messageGroup, but not the id field
-            .select('messageGroup -_id')
-
-        // console.log(userConv)
-        res.send(userConv)
-    } catch (e) {
-        res.status(400).send({ error: 'Something went wrong', errorMessage: e })
     }
 })
 
+// Returns an array of conversation blocks to the client.
+// conversationBlock: {
+//     users: [
+//         {
+//             username: user1.username,
+//             imageUrl: user1.imagePath.url,
+//         },
+//         {
+//             username: user2.username,
+//             imageUrl: user2.imagePath.url,
+//         },
+//     ],
+//     conversationId: this._id,
+//}
+router.get(
+    '/messages/user/getConversations',
+    authenticate,
+    async (req, res) => {
+        try {
+            // Get all the UserConversations where the
+            // user is this user.
+            const userConvs = await UserConversation.find({
+                user: req.user._id,
+            })
+                // Populate messageGroup with users populated also
+                .populate({
+                    path: 'messageGroup',
+                    populate: { path: 'user1 user2' },
+                })
+
+            // Create an array of conversatino blocks
+            const convBlocks = []
+            userConvs.forEach((conv) => {
+                convBlocks.push(
+                    conv.toConvBlock(
+                        conv.messageGroup.user1,
+                        conv.messageGroup.user2
+                    )
+                )
+            })
+
+            res.send(convBlocks)
+        } catch (e) {
+            res.status(400).send({
+                error: 'Something went wrong',
+                errorMessage: e.message,
+            })
+        }
+    }
+)
+
+// Post a message in an existing conversation
+router.post(
+    '/messages/:conversationId/postMessage',
+    authenticate,
+    async (req, res) => {
+        try {
+            // Find the conversation with the conversationId
+            const conv = await UserConversation.findById(
+                req.params.conversationId
+            )
+
+            if (!conv) throw new Error()
+
+            // Create a message with the same message group as
+            // as the conversation
+            const message = new Message({
+                owner: req.user._id,
+                messageBody: req.body.messageBody,
+                messageGroup: conv.messageGroup,
+            })
+
+            await message.save()
+
+            res.send(message.toMessageBlock(req.user))
+        } catch (e) {
+            res.status(400).send({
+                error: 'Something went wrong',
+                errorMessage: e.message,
+            })
+        }
+    }
+)
+// Get all messages belonging to a conversation.
+// Returns an array of message blocks to the client
+router.get(
+    '/messages/:conversationId/getAllMessages',
+    authenticate,
+    async (req, res) => {
+        try {
+            // Get the message group from the conversation id
+            const conv = await UserConversation.findOne({
+                _id: req.params.conversationId,
+                user: req.user._id,
+            })
+
+            if (!conv || conv.deleted) throw new Error()
+
+            // Get the other user
+            const otherUser = await User.findById(conv.otherUser)
+
+            // Get all messages with the same messageGroup id
+            const msgs = await Message.find({
+                messageGroup: conv.messageGroup,
+            })
+
+            const msgBlocks = []
+            let owner
+
+            // Create a message block for each message in the
+            await Promise.all(
+                msgs.map(async (m) => {
+                    if (!owner) {
+                        await m.populate('owner')
+                        owner = m.owner
+                    } else if (m.owner !== owner._id) {
+                        await m.populate('owner')
+                        owner = m.owner
+                    }
+
+                    msgBlocks.push(m.toMessageBlock(m.owner))
+                })
+            )
+
+            res.send(msgBlocks)
+        } catch (e) {
+            res.status(400).send({
+                error: 'Something went wrong',
+                errorMessage: e.message,
+            })
+        }
+    }
+)
 module.exports = router

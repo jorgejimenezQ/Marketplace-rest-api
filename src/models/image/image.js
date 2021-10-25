@@ -32,4 +32,7 @@ imageSchema.methods.toJSON = function () {
     return imageObj
 }
 
+imageSchema.virtual('url').get(function () {
+    return `${this.path}${this.name}`
+})
 module.exports = imageSchema

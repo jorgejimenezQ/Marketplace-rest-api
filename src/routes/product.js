@@ -183,4 +183,28 @@ router.put('/products/:itemNumber', authenticate, async (req, res) => {
     }
 })
 
+// Get product by query
+// {{url}}/tasks?sortBy=createdAt:desc&completed=false
+router.get('/products', async (req, res) => {
+    // Get the query
+
+    let { query, limit, skip, sortBy } = req.query
+    query = query.replace('_', '|')
+    console.log(query)
+    const reg = `^(${query})$`
+    console.log(new RegExp(reg))
+
+    try {
+        const products = await Product.find({
+            description: { $regex: new RegExp(reg), $options: 'i' },
+        })
+
+        // Add the products to the respose
+        res.products = await Product.toProductBlockArray(products)
+
+        res.send(res.products)
+    } catch (e) {
+        res.status(400).send({ error: 'Something went wrong' })
+    }
+})
 module.exports = router

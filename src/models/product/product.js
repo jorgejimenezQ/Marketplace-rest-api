@@ -22,7 +22,12 @@ const productSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        imagePaths: [{ type: imageSchema, required: false }],
+        imagePaths: [
+            {
+                type: imageSchema,
+                required: [true, 'The image array is required'],
+            },
+        ],
         name: {
             type: String,
             required: true,
@@ -58,7 +63,7 @@ const productSchema = new mongoose.Schema(
     },
     {
         timestamps: true,
-    },
+    }
 )
 
 // Create product-offer relationship
@@ -104,6 +109,76 @@ productSchema.methods.generateItemNumber = function () {
         characters.charAt(Math.floor(Math.random() * characters.length))
 
     return alpha.concat(prefix)
+}
+
+/**
+ * returns a productBlock
+ *  productBlock: {
+ *     "user": {
+ *         "username": "eptokuct",
+ *         "imageUrl": "path/to/placeholder/placeholder.jpg"
+ *     },
+ *     "imagePaths": [
+ *         {
+ *             "path": "localhost:3000/public/product-images/",
+ *             "name": "generic-image-name-3.png"
+ *         },
+ *         {
+ *             "path": "localhost:3000/public/product-images/",
+ *             "name": "generic-image-name-1.png"
+ *         },
+ *         {
+ *             "path": "localhost:3000/public/product-images/",
+ *             "name": "generic-image-name-2.png"
+ *         }
+ *     ],
+ *     "name": "black shoes",
+ *     "condition": "Very Good",
+ *     "price": 99.99,
+ *     "category": "Video Games",
+ *     "itemNumber": "EN51b9718e",
+ *     "description": "I was married in these shoes"
+ * }
+ */
+productSchema.methods.toProductBlock = function (owner) {
+    return {
+        user: {
+            username: owner.username,
+            imageUrl: owner.imagePath.url,
+        },
+        imageUrls: this.imagePaths,
+        name: this.name,
+        condition: this.condition,
+        price: this.price,
+        category: this.category,
+        itemNumber: this.itemNumber,
+        description: this.description,
+    }
+}
+
+/**
+ * Takes an array of products
+ * Returns an array of productBlocks
+
+ */
+productSchema.statics.toProductBlockArray = async (arr) => {
+    const prodBlocks = []
+    let owner
+    await Promise.all(
+        arr.map(async (product) => {
+            if (!owner) {
+                await product.populate('owner')
+                owner = product.owner
+            } else if (product.owner !== owner._id) {
+                await product.populate('owner')
+                owner = product.owner
+            }
+
+            prodBlocks.push(product.toProductBlock(product.owner))
+        })
+    )
+
+    return prodBlocks
 }
 
 const Product = mongoose.model('Product', productSchema)

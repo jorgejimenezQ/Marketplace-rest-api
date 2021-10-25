@@ -41,10 +41,12 @@ msgGroupSchema.post('save', async function (doc, next) {
     // user and save them
     const userConv1 = new UserConversation({
         user: group.user1,
+        otherUser: group.user2,
         messageGroup: group._id,
     })
     const userConv2 = new UserConversation({
         user: group.user2,
+        otherUser: group.user1,
         messageGroup: group._id,
     })
 

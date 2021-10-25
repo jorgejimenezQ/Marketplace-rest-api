@@ -8,18 +8,13 @@ const messageSchema = new mongoose.Schema(
             required: true,
             ref: 'User',
         },
-        recipient: {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true,
-            ref: 'User',
-        },
         messageBody: {
             type: String,
             require: true,
             validate(value) {
                 if (value.length > 700)
                     throw new Error(
-                        'The message must be less then 700 characters',
+                        'The message must be less then 700 characters'
                     )
             },
         },
@@ -29,11 +24,6 @@ const messageSchema = new mongoose.Schema(
             required: false,
         },
         dateRead: Date,
-        parent: {
-            type: mongoose.Schema.Types.ObjectId,
-            require: false,
-            ref: 'messageSchema',
-        },
         messageGroup: {
             type: mongoose.Schema.Types.ObjectId,
             require: true,
@@ -42,26 +32,29 @@ const messageSchema = new mongoose.Schema(
         deleted: Boolean,
         dateDeleted: Date,
     },
-    { timestamps: true },
+    { timestamps: true }
 )
 
-messageSchema.methods.toMessage = function (message, owner, recipient) {
+messageSchema.methods.toMessageBlock = function (owner) {
     return {
-        from: owner.username,
-        to: recipient.username,
-        message: message.messageBody,
-        date: message.createdAt,
-        messageId: message._id,
-        conversation: message.messageGroup._id,
+        user: {
+            username: owner.username,
+            imageUrl: owner.imagePath.url,
+        },
+        message: this.messageBody,
+        date: this.createdAt,
+        messageId: this._id,
+        messageGroup: this.messageGroup._id,
     }
 }
+
 // Sanitize the data going out
 messageSchema.methods.toJSON = function () {
     const message = this
     const msgObj = message.toObject()
 
     const result = {}
-    result.messageBody = msgObj.messageBody
+    result.message = msgObj.messageBody
     result.dateCreated = msgObj.createdAt
 
     return result

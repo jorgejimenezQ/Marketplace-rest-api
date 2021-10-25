@@ -34,7 +34,7 @@ router.post('/users', async (req, res) => {
     } catch (e) {
         res.status(400).send({
             error: 'There was an error creating the account.',
-            message: e,
+            // message: e.message,
         })
     }
 })
@@ -45,7 +45,10 @@ router.get('/users/getAccount', authenticate, async (req, res) => {
         // console.log(data)
         res.send(req.user)
     } catch (e) {
-        res.status(400).send('There was a problem.')
+        res.status(400).send({
+            error: 'There was a problem.',
+            stackMessage: e.message,
+        })
     }
 })
 
@@ -65,7 +68,7 @@ router.post('/users/logIn', async (req, res) => {
 
         res.send({ user: profile, token: token })
     } catch (e) {
-        res.status(400).send(e)
+        res.status(400).send()
     }
 })
 
@@ -84,7 +87,10 @@ router.get('/users/:username/getUser', async (req, res) => {
 
         res.send(profile)
     } catch (e) {
-        res.status(400).send(e)
+        res.status(400).send({
+            error: 'There was a problem.',
+            //    stackMessage: e.message,
+        })
     }
 })
 
