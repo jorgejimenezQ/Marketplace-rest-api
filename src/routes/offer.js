@@ -11,6 +11,7 @@ const express = require('express')
 const authenticate = require('../middleware/auth.js')
 const Product = require('../models/product/product.js')
 const Offer = require('../models/offer/offer.js')
+const { updateOffer, updateOfferMany } = require('../utils/updateOffer.js')
 
 const router = express.Router()
 
@@ -45,3 +46,76 @@ router.post('/offers', authenticate, async (req, res) => {
         })
     }
 })
+
+// Read an offer
+router.get('/offers/:offerId', authenticate, async (req, res) => {
+    try {
+        const offerBlock = await updateOffer(req, (offer) => {
+            offer.offerViewed = true
+            offer.dateViewed = Date.now()
+        })
+
+        res.send(offerBlock)
+    } catch (e) {
+        res.status(400).send({
+            error: 'Something went wrong',
+            errorMessage: e.message,
+        })
+    }
+})
+
+// Read all offers for a product
+router.get('/offers/:itemNumber/all', authenticate, async (req, res) => {
+    try {
+        const offers = await updateOfferMany(req, (offer) => {
+            offer.offerViewed = true
+            offer.dateViewed = Date.now()
+        })
+
+        res.send(offers)
+    } catch (e) {
+        res.status(400).send({
+            error: 'Something went wrong',
+            errorMessage: e.message,
+        })
+    }
+})
+
+// Accept an offer
+router.put('/offers/:offerId', authenticate, async (req, res) => {
+    try {
+        const offerBlock = await updateOffer(req, (offer) => {
+            // Update the fields
+            offer.offerAccepted = true
+            offer.offerRejected = false
+            offer.dateAccepted = Date.now()
+        })
+
+        res.send(offerBlock)
+    } catch (e) {
+        res.status(400).send({
+            error: 'Something went wrong',
+            errorMessage: e.message,
+        })
+    }
+})
+
+// Reject an offer
+router.delete('/offers/:offerId', authenticate, async (req, res) => {
+    try {
+        const offerBlock = await updateOffer(req, (offer) => {
+            offer.offerRejected = true
+            offer.offerAccepted = false
+            offer.dateRejected = Date.now()
+        })
+
+        res.send(offerBlock)
+    } catch (e) {
+        res.status(400).send({
+            error: 'Something went wrong',
+            errorMessage: e.message,
+        })
+    }
+})
+
+module.exports = router

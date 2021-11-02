@@ -20,17 +20,17 @@ const imageSchema = new mongoose.Schema(
                 delete ret._id
             },
         },
-    },
+    }
 )
 
-imageSchema.methods.toJSON = function () {
-    const image = this
-    const imageObj = image.toObject()
+// imageSchema.methods.toJSON = function () {
+//     const image = this
+//     const imageObj = image.toObject()
 
-    delete imageObj._id
+//     delete imageObj._id
 
-    return imageObj
-}
+//     return imageObj
+// }
 
 imageSchema.virtual('url').get(function () {
     return `${this.path}${this.name}`

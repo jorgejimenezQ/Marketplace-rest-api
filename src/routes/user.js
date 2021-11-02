@@ -132,7 +132,7 @@ router.delete('/users', authenticate, async (req, res) => {
         // Set all products as removed
         await Product.updateMany(
             { owner: req.user._id },
-            { removed: true, dateRemoved: Date.now() },
+            { removed: true, dateRemoved: Date.now() }
         )
 
         // Save and send

@@ -27,8 +27,7 @@ const offerSchema = new mongoose.Schema(
     { timestamps: true }
 )
 
-// Returns an offer block
-
+// Returns an offer block with the product and the user
 offerSchema.methods.toOfferBlock = function (
     product,
     productOwner,
@@ -45,6 +44,26 @@ offerSchema.methods.toOfferBlock = function (
             amount: this.offerAmount,
             isViewed: this.offerViewed,
             isRejected: this.offerRejected,
+            offerId: this._id,
+            isAccepted: this.offerAccepted,
+        },
+    }
+}
+
+// Returns an offer block without the
+// product and the user
+offerSchema.methods.toOfferBlock = function (offerOwner) {
+    return {
+        offer: {
+            owner: {
+                username: offerOwner.username,
+                imageUrl: offerOwner.imagePath.url,
+            },
+            amount: this.offerAmount,
+            isViewed: this.offerViewed,
+            isRejected: this.offerRejected,
+            offerId: this._id,
+            isAccepted: this.offerAccepted,
         },
     }
 }

@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema(
         // Should we include virtuals by default or as needed
         // toJSON: { virtuals: true },
         // toObject: { virtuals: true },
-    },
+    }
 )
 
 // A virtual field that creates a user-product relationship
