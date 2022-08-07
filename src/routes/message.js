@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017
+ * Copyright (c) 2021
  *
  * long description for the file
  *
@@ -41,6 +41,7 @@ const router = new express.Router() // Router constructor
 //     messageId: message._id,
 //     date: message.createdAt,
 //}
+
 router.post('/messages', authenticate, async (req, res) => {
     try {
         // Find the recipient for the message

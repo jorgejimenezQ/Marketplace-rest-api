@@ -7,6 +7,7 @@ const authenticate = async (req, res, next) => {
     try {
         // Get the token from the request header
         const token = req.get('Authorization').replace('Bearer ', '')
+        
         // Decode the data from the token
         const tokenData = jwt.verify(token, process.env.JWT_SECRET)
 

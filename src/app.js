@@ -6,6 +6,9 @@ const offerRouter = require('./routes/offer.js')
 const publicRouter = require('./routes/assets.js')
 const productImageRouter = require('./routes/productImage.js')
 const userImageRouter = require('./routes/userImage.js')
+const apiDocs = require('./routes/apiDocs.js')
+
+const path = require('path')
 
 require('./db/mongoose.js')
 
@@ -21,6 +24,7 @@ app.use(offerRouter)
 app.use(publicRouter)
 app.use(productImageRouter)
 app.use(userImageRouter)
+app.use(apiDocs)
 
 module.exports = app
 
