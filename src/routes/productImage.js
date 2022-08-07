@@ -38,16 +38,16 @@ router.post(
     async (req, res) => {
         try {
             const product = req.product
-
-            if (product.imagePaths.length > 19)
+            // console.log(product, parseInt(process.env.IMG_LIMIT))
+            if (product.imagePaths.length > parseInt(process.env.IMG_LIMIT))
                 return res.status(409).send({
-                    Error: 'The product has reached the maximum amount of images allowed!',
+                    Error: 'Only 2 images allowed per product!',
                 })
 
             // update product with the path and name of the images
             const newImagePaths = req.files.map((file) => {
                 return {
-                    path: process.env.PRODUCT_ASSETS_PATH,
+                    path: '../../public/product/',
                     name: file.filename,
                 }
             })

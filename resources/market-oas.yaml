@@ -11,6 +11,8 @@ tags:
     description: Access to the user messages
   - name: user
     description: Operations on users
+  - name: image
+    description: Getting,
 paths:
   /products:
     description: The products posted by sellers
