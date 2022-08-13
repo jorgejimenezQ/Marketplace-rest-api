@@ -15,6 +15,7 @@ const multer = require('multer')
 const customStorage = require('../utils/customMulterStorage')
 const { makeFilepath, uploadOptions } = require('../utils/uploader')
 const removeFile = require('../utils/removeFile')
+const USER_IMAGE_PATH = `${__dirname}/../../public/user/`
 
 const router = express.Router()
 
@@ -35,17 +36,17 @@ router.post(
     upload.single('image'),
     async (req, res) => {
         try {
-            const prevFilepath =
-                process.env.ASSETS_USER + req.user.imagePath.name
+            const prevFilepath = USER_IMAGE_PATH + req.user.imagePath.name
 
             // Check for existing image and delete
-            removeFile(prevFilepath)
+            if (req.user.imageSet) removeFile(prevFilepath)
 
             // Update the user and save
             req.user.imagePath = {
-                path: process.env.USER_ASSETS_PATH,
+                path: 'n/a',
                 name: req.file.filename,
             }
+            req.user.imageSet = true
             await req.user.save()
 
             res.send(req.user)
@@ -58,26 +59,39 @@ router.post(
     },
     (error, req, res, next) => {
         console.log('Error: check error code')
-        res.status(400).send({ error: error.message })
+        res.status(500).send({ error: error.message })
     }
 )
 
 /** Remove image */
-router.delete('/images', authenticate, async (req, res) => {
+router.delete('/images/', authenticate, async (req, res) => {
     try {
+        // Check if the image has been set
+        if (!req.user.imageSet) {
+            res.status(404).send({
+                error: 'The profile image has not been set.',
+            })
+            return
+        }
+
         // Remove the file from storage
-        removeFile(`${process.env.ASSETS_USER}${req.user.imagePath.name}`)
+        const isFileDeleted = removeFile(
+            `${USER_IMAGE_PATH}${req.user.imagePath.name}`
+        )
 
         // Remove the image from the user and save
         req.user.imagePath = {
-            path: process.env.USER_PLACEHOLDER_PATH,
-            name: process.env.USER_PLACEHOLDER_NAME,
+            path: 'n/a',
+            name: 'placeholder.png',
         }
+        req.user.imageSet = false
         await req.user.save()
 
-        res.send()
+        if (!isFileDeleted) throw new Error('The file was not found') // Check for error from deleting file
+
+        res.send(req.user)
     } catch (e) {
-        res.status(400).send({
+        res.status(404).send({
             error: 'Something went wrong',
             errorMessage: e.message,
         })

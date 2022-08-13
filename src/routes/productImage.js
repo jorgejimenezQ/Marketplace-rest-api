@@ -16,7 +16,7 @@ const customStorage = require('../utils/customMulterStorage')
 const { makeFilepath, uploadOptions } = require('../utils/uploader')
 const findProduct = require('../middleware/getProduct')
 const removeFile = require('../utils/removeFile')
-
+const PRODUCT_PATH = `${__dirname}/../../public/product/`
 const router = express.Router()
 
 const storage = customStorage({
@@ -38,11 +38,18 @@ router.post(
     async (req, res) => {
         try {
             const product = req.product
-            // console.log(product, parseInt(process.env.IMG_LIMIT))
-            if (product.imagePaths.length > parseInt(process.env.IMG_LIMIT))
-                return res.status(409).send({
+
+            // Check the maximum allowed
+            if (product.imagePaths.length > parseInt(process.env.IMG_LIMIT)) {
+                req.files.map((file) => {
+                    removeFile(PRODUCT_PATH + file.filename)
+                })
+                res.status(409).send({
                     Error: 'Only 2 images allowed per product!',
                 })
+                // remove the file we just added
+                return
+            }
 
             // update product with the path and name of the images
             const newImagePaths = req.files.map((file) => {
@@ -80,26 +87,50 @@ router.delete(
             // Find the product and filter out the
             // images the user wants to delete
             const product = req.product
-            const imageIds = req.body.images
+            const images = req.body.images
+            let isFileDeletedError = false
 
+            if (images.length == 0) {
+                res.status(400).send({
+                    error: 'There needs to be at least one image to query',
+                })
+                return
+            }
+
+            // Check for product with no images
+            if (product.imagePaths.length == 0) {
+                res.status(404).send({
+                    error: 'There are no images for this product',
+                })
+                return
+            }
+
+            // Iterate through the image and remove the one in images array
             const newImages = product.imagePaths.filter((image) => {
-                for (let i = 0; i < imageIds.length; i++) {
-                    if (image._id.toString() === imageIds[i]) {
-                        removeFile(`${process.env.ASSETS_PRODUCT}${image.name}`)
-                        return false
-                    }
+                if (images.includes(image.name)) {
+                    // Get the file path
+                    const filePath = `${__dirname}/../../public/product/${image.name}`
+
+                    const isFileDeleted = removeFile(filePath)
+                    // Check for error from removeFile
+                    if (!isFileDeleted) isFileDeletedError = true
+                    console.log('got here before false')
+                    return false
                 }
                 return true
             })
 
-            // Modefy the product images and save
+            // Modify the product images and save
             req.product.imagePaths = newImages
             await req.product.save()
 
-            // Crate a product block
+            // If there was an error throw exception, log it
+            // if (isFileDeletedError) { }
+
+            // Send a product block
             res.send(req.product.toProductBlock(req.user))
         } catch (e) {
-            res.status(400).send({
+            res.status(404).send({
                 error: 'Something went wrong',
                 errorMessage: e.message,
             })

@@ -12,7 +12,7 @@
             "type": "pwa-node",
             "env": {
                 "PORT": "3000",
-                "MONGODB_URL": "mongodb://127.0.0.1:27017/marketplace-api",
+                "MONGODB_URL": "MONGODB_URL=mongodb+srv://jorgejimenez:1FL1ZJdHbbQa6VTd@clusterlearn.5fhbt.mongodb.net/marketplace-api-dev?retryWrites=true&w=majority",
                 "JWT_SECRET": "cju2342-mlkapw28-lkviemn-@sdf345"
             }
         },

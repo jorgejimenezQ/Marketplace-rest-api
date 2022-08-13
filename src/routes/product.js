@@ -133,6 +133,31 @@ router.get('/products/:itemNumber/getOwner', async (req, res) => {
     }
 })
 
+// Retrieve a product's info.
+router.get('/products/:itemNumber', async (req, res) => {
+    try {
+        // Find the product with the itemNumber
+        const product = await Product.findOne({
+            itemNumber: req.params.itemNumber,
+        })
+
+        // If the product does not exist send error
+        if (!product || product.removed)
+            return res.status(400).send({ error: 'Product does not exist!' })
+
+        await product.populate('owner')
+
+        // Add the products to the response
+        res.products = await product.toProductBlock(product.owner)
+        res.send(res.products)
+    } catch (error) {
+        res.status(404).send({
+            error: 'Could not find product',
+            errorMessage: error.message,
+        })
+    }
+})
+
 // Retrieve a product's images. The response will contain an array of
 // image urls
 router.get('/products/:itemNumber/getImagePaths', async (req, res) => {
@@ -185,20 +210,28 @@ router.put('/products/:itemNumber', authenticate, async (req, res) => {
 // Get product by query
 // {{url}}/tasks?sortBy=createdAt:desc&completed=false
 router.get('/products', async (req, res) => {
-    // Get the query
-
+    // Get the query & prepare it
     let { query, limit, skip, sortBy } = req.query
-    query = query.replace('_', '|')
-    console.log(query)
-    const reg = `^(${query})$`
-    console.log(new RegExp(reg))
+    if (query === undefined) {
+        query = ''
+    } else {
+        query = query.replace('*', '')
+        query = query.replace('_', '|')
+        const reg = `^(${query})$`
+    }
 
     try {
-        const products = await Product.find({
-            description: { $regex: new RegExp(reg), $options: 'i' },
-        })
+        let products
+        if (query === '') {
+            products = await Product.find()
+        } else {
+            console.log(new RegExp(reg))
+            products = await Product.find({
+                description: { $regex: new RegExp(reg), $options: 'i' },
+            })
+        }
 
-        // Add the products to the respose
+        // Add the products to the response
         res.products = await Product.toProductBlockArray(products)
 
         res.send(res.products)

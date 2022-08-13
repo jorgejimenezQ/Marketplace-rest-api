@@ -3,3 +3,5 @@ config
 .DS_Store
 .prettierrc.json
 jugando.js
+public
+resources

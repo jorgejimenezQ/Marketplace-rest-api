@@ -18,24 +18,53 @@ const schema = new mongoose.Schema({
         require: true,
         ref: 'MessageGroup',
     },
-    deleted: Boolean,
-    datedeleted: Date,
+    product: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'Product',
+    },
+    deleted: { type: Boolean, default: false },
+    dateDeleted: Date,
 })
 
-schema.methods.toConvBlock = function (user1, user2) {
+schema.methods.toConvBlock = function (otherUser) {
+    const conversation = this
     return {
-        users: [
-            {
-                username: user1.username,
-                imageUrl: user1.imagePath.url,
-            },
-            {
-                username: user2.username,
-                imageUrl: user2.imagePath.url,
-            },
-        ],
-        conversationId: this._id,
+        user: conversation.user,
+        otherUser: conversation.otherUser,
+        messageGroup: conversation.messageGroup,
+        product: conversation.product,
+        conversationId: conversation._id,
     }
+}
+
+schema.statics.createUserConversation = async (
+    user1Id,
+    user2Id,
+    productId,
+    groupId
+) => {
+    // Create one userConversations for each
+    // user and save them
+    const userConv1 = new UserConversation({
+        user: user1Id,
+        otherUser: user2Id,
+        messageGroup: groupId,
+        product: productId,
+    })
+    const userConv2 = new UserConversation({
+        user: user2Id,
+        otherUser: user1Id,
+        messageGroup: groupId,
+        product: productId,
+    })
+
+    // Save the userConversations
+    await userConv1.save()
+    await userConv2.save()
+
+    if (!userConv1 || !userConv2) throw new Error('Something Went Wrong')
+    return
 }
 
 const UserConversation = mongoose.model('UserConversation', schema)

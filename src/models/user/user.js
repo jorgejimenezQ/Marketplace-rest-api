@@ -1,4 +1,4 @@
-    const validator = require('validator')
+const validator = require('validator')
 const mongoose = require('mongoose')
 const Message = require('../message/message.js')
 const Product = require('../product/product.js')
@@ -20,13 +20,13 @@ const userSchema = new mongoose.Schema(
         },
         emailIsVerified: { type: Boolean, default: false },
         imagePath: { type: imageSchema, required: false },
+        imageSet: Boolean,
         password: {
             type: String,
             required: true,
         },
         deleted: { type: Boolean, default: false },
         dateDeleted: Date,
-        profileImage: Buffer,
         tokens: [
             {
                 token: { type: String, required: true },
@@ -56,6 +56,12 @@ userSchema.virtual('messages', {
     ref: 'Message',
     localField: '_id',
     foreignField: 'owner',
+})
+
+userSchema.virtual('userConversations', {
+    ref: 'UserConversation',
+    localField: '_id',
+    foreignField: 'user',
 })
 
 // Sanatize data before converting to JSON
@@ -109,7 +115,9 @@ userSchema.methods.createProfile = async function () {
 
     const prof = {
         username: user.username,
-        image: user.imagePath,
+        imageName: user.imagePath.name
+            ? user.imagePath.name
+            : 'placeholder.png',
         products: user.products,
     }
 
@@ -158,8 +166,8 @@ userSchema.pre('save', async function (next) {
 
     if (!user.imagePath) {
         user.imagePath = {
-            path: process.env.USER_PLACEHOLDER_PATH,
-            name: process.env.USER_PLACEHOLDER_NAME,
+            path: `${__dirname}/../../public/user/`,
+            name: 'placeholder.png',
         }
     }
 

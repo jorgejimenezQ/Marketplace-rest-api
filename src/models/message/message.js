@@ -18,6 +18,11 @@ const messageSchema = new mongoose.Schema(
                     )
             },
         },
+        product: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: 'Product',
+        },
         isRead: {
             type: Boolean,
             default: false,
@@ -39,7 +44,7 @@ messageSchema.methods.toMessageBlock = function (owner) {
     return {
         user: {
             username: owner.username,
-            imageUrl: owner.imagePath.url,
+            image: owner.imagePath.name,
         },
         message: this.messageBody,
         date: this.createdAt,
@@ -56,7 +61,16 @@ messageSchema.methods.toJSON = function () {
     const result = {}
     result.message = msgObj.messageBody
     result.dateCreated = msgObj.createdAt
+    result.isRead = msgObj.isRead
 
+    result.owner = {
+        username: msgObj.owner.username,
+        image: msgObj.owner.imagePath.name,
+    }
+    result.product = {
+        name: msgObj.product.name,
+        itemNumber: msgObj.product.itemNumber,
+    }
     return result
 }
 

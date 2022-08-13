@@ -73,6 +73,12 @@ productSchema.virtual('offers', {
     foreignField: 'product',
 })
 
+productSchema.virtual('messages', {
+    ref: 'Message',
+    localField: '_id',
+    foreignField: 'product',
+})
+
 productSchema.virtual('images', {
     ref: 'Image',
     localField: '_id',
@@ -144,9 +150,9 @@ productSchema.methods.toProductBlock = function (owner) {
     return {
         user: {
             username: owner.username,
-            imageUrl: owner.imagePath.url,
+            image: owner.imagePath.name,
         },
-        imageUrls: this.imagePaths,
+        images: this.imagePaths,
         name: this.name,
         condition: this.condition,
         price: this.price,
@@ -162,6 +168,7 @@ productSchema.methods.toProductBlock = function (owner) {
 
  */
 productSchema.statics.toProductBlockArray = async (arr) => {
+    console.log(arr)
     const prodBlocks = []
     let owner
     await Promise.all(

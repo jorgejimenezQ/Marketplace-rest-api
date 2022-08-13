@@ -11,6 +11,12 @@ const product = async (req, res, next) => {
         // Add the product to the request object
         req.product = product
 
+        // Authorize the user to access product
+        if (req.product.owner._id.toString() !== req.user._id.toString()) {
+            res.status(401).send({ error: 'Could not access the item' })
+            return
+        }
+
         next()
     } catch (e) {
         res.status(404).send({ error: 'Product not found!' })

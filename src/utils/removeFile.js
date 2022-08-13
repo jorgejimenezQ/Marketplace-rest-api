@@ -1,12 +1,12 @@
 const fs = require('fs')
 
-const removeFile = async (path) => {
+const removeFile = (path) => {
     // Check for existing image and delete
-    await fs.access(path, (err) => {
-        if (err) return
-
+    if (fs.existsSync(path)) {
         fs.unlinkSync(path)
-    })
+        return true
+    }
+    return false
 }
 
 module.exports = removeFile

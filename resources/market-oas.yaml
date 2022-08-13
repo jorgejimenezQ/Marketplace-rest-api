@@ -172,7 +172,52 @@ paths:
       responses:
         "200":
           description: Succesful Operation
-
+  /image/{itemNumber}/addProductImage:
+    parameters:
+      - $ref: "#/components/parameters/productRef"
+    description: An array of images
+    post:
+      summary: Add images
+      description: Add images from array
+      tags:
+        - image
+      requestBody:
+        $ref: "#/components/requestBodies/arrayOfImages"
+      responses:
+        "200":
+          description: Succesful Operation
+  /image/{itemNumber}/deleteProductImage:
+    parameters:
+      - $ref: "#/components/parameters/productRef"
+    delete:
+      tags:
+        - image
+      summary: Remove a product's image
+      description: |
+        Remove the product's image using the product reference from the sellers merchindise
+      responses:
+        "200":
+          description: A successful operation(the image is deleted)
+  /image/{username}/:
+    parameters:
+      - $ref: "#/components/parameters/username"
+    delete:
+      tags:
+        - image
+      summary: Remove a user's image
+      description: |
+        Remove the user's image using the user's unique username
+      responses:
+        "200":
+          description: A successful operation(the image is deleted)
+    post:
+      summary: Add images
+      description: Add images from array
+      tags:
+        - image
+      responses:
+        "200":
+          description: Succesful Operation
   /users/{username}/getAllProducts:
     parameters:
       - $ref: "#/components/parameters/username"
@@ -603,6 +648,19 @@ components:
       description: Product's reference
       schema:
         type: string
+    arrayOfImages:
+      name: arrayOfImages
+      in: path
+      description: An array of images
+      required: true
+      schema:
+        type: array
+        description: Array of images
+        items:
+          type: string
+          description: A binary representation of an image
+          format: binary
+
   #schemas
   schemas:
     Product:
@@ -729,3 +787,6 @@ components:
           type: string
           format: date
           description: The date the message was sent
+    Image:
+      type: object
+      description: An image
