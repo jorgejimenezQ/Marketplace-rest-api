@@ -17,9 +17,11 @@ MyCustomStorage.prototype._handleFile = function _handleFile(req, file, cb) {
         var outStream = fs.createWriteStream(path)
         var resizer = sharp().resize(100, 100)
 
+        // console.log(_path.dirname(path))
+        // console.log(path)
         // Check if the directory exist, if not, create it
         if (!fs.existsSync(_path.dirname(path))) {
-            fs.mkdir(path, (err) => {
+            fs.mkdir(_path.dirname(path), (err) => {
                 if (err) return cb(err)
             })
         }
