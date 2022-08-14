@@ -69,6 +69,33 @@ router.delete('/products/:itemNumber', authenticate, async (req, res) => {
     }
 })
 
+// Sell product
+// This endpoint will just set the value of sold
+// to true and set the dateSold to the current date
+router.put('/products/:itemNumber', authenticate, async (req, res) => {
+    try {
+        // console.log(req.user._id)
+        const product = await Product.findOne({
+            itemNumber: req.params.itemNumber,
+            owner: req.user._id,
+        })
+        // console.log(product.owner._id)
+
+        // If product does not exist
+        // or product has already been removed
+        if (!product || product.removed || product.sold) throw new Error()
+
+        // If product exists under user account, set sold to true
+        product.sold = true
+        product.dateSold = Date.now() // set the dateSold to today
+        await product.save()
+
+        res.send(product.toProductBlock(req.user))
+    } catch (e) {
+        res.status(400).send({ error: 'Something went wrong' })
+    }
+})
+
 // Update product
 /**
  *
@@ -106,30 +133,9 @@ router.patch('/products/:itemNumber', authenticate, async (req, res) => {
         // Populate the username of the owner
         await product.populate('owner', 'username')
 
-        res.send(product)
+        res.send(product.toProductBlock(req.user))
     } catch (e) {
         res.status(400).send({ error: 'Unable to updaet product.' })
-    }
-})
-
-// Get a product's owner
-router.get('/products/:itemNumber/getOwner', async (req, res) => {
-    try {
-        // Get the product with the generateItemNumber
-        // And populate the owner field
-        const product = await Product.findOne({
-            itemNumber: req.params.itemNumber,
-        }).populate('owner')
-
-        // If the product does not exist send error
-        if (!product || product.removed)
-            return res.status(400).send({ error: 'Product does not exist!' })
-
-        // console.log(product.owner)
-        // All good!
-        res.send(product.owner)
-    } catch (e) {
-        res.status(400).send({ error: 'Unable to find user' })
     }
 })
 
@@ -158,9 +164,29 @@ router.get('/products/:itemNumber', async (req, res) => {
     }
 })
 
+// Get a product's owner
+router.get('/products/:itemNumber/owner', async (req, res) => {
+    try {
+        // Get the product with the generateItemNumber
+        // And populate the owner field
+        const product = await Product.findOne({
+            itemNumber: req.params.itemNumber,
+        }).populate('owner')
+
+        // If the product does not exist send error
+        if (!product || product.removed)
+            return res.status(400).send({ error: 'Product does not exist!' })
+
+        // All good!
+        res.send(await product.owner.getPublicInfo())
+    } catch (e) {
+        res.status(400).send({ error: 'Unable to find user' })
+    }
+})
+
 // Retrieve a product's images. The response will contain an array of
 // image urls
-router.get('/products/:itemNumber/getImagePaths', async (req, res) => {
+router.get('/products/:itemNumber/images', async (req, res) => {
     try {
         // Find the product with the itemNumber
         const product = await Product.findOne({
@@ -177,33 +203,6 @@ router.get('/products/:itemNumber/getImagePaths', async (req, res) => {
         res.send(images)
     } catch (error) {
         res.status(400).send({ error: 'Unable to find images' })
-    }
-})
-
-// Sell product
-// This endpoint will just set the value of sold
-// to true and set the dateSold to the current date
-router.put('/products/:itemNumber', authenticate, async (req, res) => {
-    try {
-        // console.log(req.user._id)
-        const product = await Product.findOne({
-            itemNumber: req.params.itemNumber,
-            owner: req.user._id,
-        })
-        // console.log(product.owner._id)
-
-        // If product does not exist
-        // or product has already been removed
-        if (!product || product.removed || product.sold) throw new Error()
-
-        // If product exists under user account, set sold to true
-        product.sold = true
-        product.dateSold = Date.now() // set the dateSold to today
-        await product.save()
-
-        res.send({ user: req.user.username, product: product })
-    } catch (e) {
-        res.status(400).send({ error: 'Something went wrong' })
     }
 })
 
@@ -225,7 +224,7 @@ router.get('/products', async (req, res) => {
         if (query === '') {
             products = await Product.find()
         } else {
-            console.log(new RegExp(reg))
+            // console.log(new RegExp(reg))
             products = await Product.find({
                 description: { $regex: new RegExp(reg), $options: 'i' },
             })
@@ -239,4 +238,5 @@ router.get('/products', async (req, res) => {
         res.status(400).send({ error: 'Something went wrong' })
     }
 })
+
 module.exports = router

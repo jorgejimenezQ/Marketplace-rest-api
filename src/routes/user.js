@@ -16,7 +16,9 @@ const Message = require('../models/message/message.js')
 const statusCodes = require('../utils/utils.js')
 
 const router = new express.Router() // Router constructor
-
+/** ................................... */
+/** /users */
+/** ................................... */
 // Create a user
 router.post('/users', async (req, res) => {
     // Get the user and save it
@@ -35,61 +37,6 @@ router.post('/users', async (req, res) => {
         res.status(400).send({
             error: 'There was an error creating the account.',
             // message: e.message,
-        })
-    }
-})
-
-// Get user's account
-router.get('/users/getAccount', authenticate, async (req, res) => {
-    try {
-        // console.log(data)
-        res.send(req.user)
-    } catch (e) {
-        res.status(400).send({
-            error: 'There was a problem.',
-            stackMessage: e.message,
-        })
-    }
-})
-
-// Log in a user
-router.post('/users/logIn', async (req, res) => {
-    try {
-        // Try to get the user from the credentials passed in and create a token
-        const user = await User.getAccount(req.body.email, req.body.password)
-
-        // Check if user has been deleted
-        if (user.deleted)
-            return res.status(400).send({ error: 'Unable to log user in!' })
-
-        // If active user generate token and send!
-        const token = await user.generateToken()
-        const profile = await user.createProfile()
-
-        res.send({ user: profile, token: token })
-    } catch (e) {
-        res.status(400).send()
-    }
-})
-
-// Get a user by the username
-router.get('/users/:username/getUser', async (req, res) => {
-    const username = req.params.username
-
-    try {
-        // Find the user and create a profile of the user's account
-        const user = await User.findOne({ username })
-        if (!user || user.deleted) {
-            return res.status(404).send({ error: 'User not found!' })
-        }
-
-        const profile = await user.createProfile()
-
-        res.send(profile)
-    } catch (e) {
-        res.status(400).send({
-            error: 'There was a problem.',
-            //    stackMessage: e.message,
         })
     }
 })
@@ -144,8 +91,11 @@ router.delete('/users', authenticate, async (req, res) => {
     }
 })
 
+/** ................................... */
+/** /users/logOut */
+/** ................................... */
 // Log user out with current token
-router.post('/users/logOut', authenticate, async (req, res) => {
+router.post('/users/logout', authenticate, async (req, res) => {
     try {
         // Get a copy of the tokens array without the token we want to delete
         req.user.tokens = req.user.tokens.filter((e) => e.token !== req.token)
@@ -160,7 +110,7 @@ router.post('/users/logOut', authenticate, async (req, res) => {
 })
 
 // Log out all
-router.post('/users/logOutAll', authenticate, async (req, res) => {
+router.post('/users/logoutAll', authenticate, async (req, res) => {
     try {
         // Set the tokens arrya to an empty array
         req.user.tokens = []
@@ -169,12 +119,67 @@ router.post('/users/logOutAll', authenticate, async (req, res) => {
 
         res.send()
     } catch (e) {
-        res.status(400).send(e)
+        res.status(401).send(e)
+    }
+})
+
+// Log in a user
+router.post('/users/login', async (req, res) => {
+    try {
+        // Try to get the user from the credentials passed in and create a token
+        const user = await User.getAccount(req.body.email, req.body.password)
+
+        // Check if user has been deleted
+        if (user.deleted)
+            return res.status(400).send({ error: 'Unable to log user in!' })
+
+        // If active user generate token and send!
+        const token = await user.generateToken()
+        const profile = await user.createProfile()
+
+        res.send({ user: profile, token: token })
+    } catch (e) {
+        res.status(400).send()
+    }
+})
+
+// Get user's account
+router.get('/users/getAccount', authenticate, async (req, res) => {
+    try {
+        // console.log(data)
+        res.send(req.user)
+    } catch (e) {
+        res.status(400).send({
+            error: 'There was a problem.',
+            stackMessage: e.message,
+        })
+    }
+})
+
+// Get a user by the username
+router.get('/users/:username/info', async (req, res) => {
+    const username = req.params.username
+
+    try {
+        // Find the user and create a profile of the user's account
+        const user = await User.findOne({ username })
+        if (!user || user.deleted) {
+            return res.status(404).send({ error: 'User not found!' })
+        }
+
+        const profile = await user.getPublicInfo()
+
+        res.send(profile)
+    } catch (e) {
+        res.status(400).send({
+            error: 'There was a problem.',
+            //    stackMessage: e.message,
+        })
     }
 })
 
 // Get all the product from a user with their username
-router.get('/users/:username/getProducts', async (req, res) => {
+router.get('/users/:username/products', async (req, res) => {
     try {
         // Find the user with username
         const user = await User.findOne({

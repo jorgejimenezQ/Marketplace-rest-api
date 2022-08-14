@@ -18,21 +18,24 @@ const imageSchema = new mongoose.Schema(
         toObject: {
             transform: (doc, ret) => {
                 delete ret._id
+                delete ret.path
             },
         },
     }
 )
 
-// imageSchema.methods.toJSON = function () {
-//     const image = this
-//     const imageObj = image.toObject()
+imageSchema.methods.toJSON = function () {
+    const image = this
+    const imageObj = image.toObject()
 
-//     delete imageObj._id
+    delete imageObj._id
+    delete imageObj.path
 
-//     return imageObj
-// }
+    return imageObj
+}
 
 imageSchema.virtual('url').get(function () {
     return `${this.path}${this.name}`
 })
+
 module.exports = imageSchema

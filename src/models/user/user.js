@@ -115,6 +115,35 @@ userSchema.methods.createProfile = async function () {
 
     const prof = {
         username: user.username,
+        email: user.email,
+        imageName: user.imagePath.name
+            ? user.imagePath.name
+            : 'placeholder.png',
+        products: user.products,
+    }
+
+    return prof
+}
+
+userSchema.methods.getPublicInfo = async function () {
+    const user = this // "this" refers to the document
+
+    // Populate the user's products
+    await user.populate([
+        {
+            path: 'products',
+            select: [
+                'itemNumber',
+                'description',
+                'name',
+                'price',
+                'imagePaths',
+            ],
+        },
+    ])
+
+    const prof = {
+        username: user.username,
         imageName: user.imagePath.name
             ? user.imagePath.name
             : 'placeholder.png',

@@ -93,6 +93,8 @@ productSchema.methods.toJSON = function () {
     const prodObject = product.toObject()
     const result = {}
 
+    // console.log(product.imagePaths.toObject())
+
     result.owner = product.owner.username
     result.imagePaths = product.imagePaths.toObject()
     result.name = product.name
@@ -159,6 +161,7 @@ productSchema.methods.toProductBlock = function (owner) {
         category: this.category,
         itemNumber: this.itemNumber,
         description: this.description,
+        sold: this.sold,
     }
 }
 

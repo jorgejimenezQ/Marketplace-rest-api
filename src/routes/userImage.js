@@ -31,7 +31,7 @@ const upload = multer({ storage, ...uploadOptions })
 
 /** Add a user's image **/
 router.post(
-    '/images/addUserImage',
+    '/images',
     authenticate,
     upload.single('image'),
     async (req, res) => {

@@ -31,7 +31,7 @@ const upload = multer({ storage, ...uploadOptions })
 
 /** Add product image */
 router.post(
-    '/images/:itemNumber/addProductImage',
+    '/images/:itemNumber',
     authenticate,
     findProduct,
     upload.array('images', 6),
@@ -79,7 +79,7 @@ router.post(
 
 /** Delete image */
 router.delete(
-    '/images/:itemNumber/deleteImages',
+    '/images/:itemNumber',
     authenticate,
     findProduct,
     async (req, res) => {
