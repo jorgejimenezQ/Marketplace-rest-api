@@ -19,8 +19,8 @@ const router = express.Router()
 // Post a product
 router.post('/products', authenticate, async (req, res) => {
     try {
-        // Create the product fromt he authenticated user and
-        // requesst body content
+        // Create the product from he authenticated user and
+        // request body content
         const product = new Product({
             owner: req.user._id,
             ...req.body, // Get the request body
@@ -46,6 +46,39 @@ router.post('/products', authenticate, async (req, res) => {
     }
 })
 
+// Post a product with out authentication
+router.post('/products/test', async (req, res) => {
+    try {
+        return res.status(401).send()
+        const owner = await User.findOne({ username: req.body.owner })
+        // request body content
+        const product = new Product({
+            owner: owner._id,
+            description: req.body.description, // Get the request body
+            name: req.body.name,
+            condition: req.body.condition,
+            price: req.body.price,
+            category: req.body.category,
+        })
+
+        // Generate the item number
+        const itemNumber = await product.generateItemNumber()
+        product.itemNumber = itemNumber
+
+        await product.save()
+        if (!product) {
+            res.status(400).send('There was a problem uploading the product.')
+        }
+
+        // Populate the username of the owner
+        await product.populate('owner', 'username')
+        console.log(product)
+        // SEND!!
+        res.send(product)
+    } catch (e) {
+        res.status(400).send('Unable to create product.')
+    }
+})
 // Remove a product from a user's merchandise
 router.delete('/products/:itemNumber', authenticate, async (req, res) => {
     try {
