@@ -17,7 +17,7 @@ require('./db/mongoose.js')
 const app = express()
 
 // cors
-app.use(cors)
+app.use(cors())
 
 // Have express use the routers
 app.use(express.json())
