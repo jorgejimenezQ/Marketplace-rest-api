@@ -7,6 +7,7 @@ const publicRouter = require('./routes/assets.js')
 const productImageRouter = require('./routes/productImage.js')
 const userImageRouter = require('./routes/userImage.js')
 const apiDocs = require('./routes/apiDocs.js')
+const cors = require('cors')
 
 const path = require('path')
 
@@ -14,6 +15,9 @@ require('./db/mongoose.js')
 
 // Get the express object
 const app = express()
+
+// cors
+app.use(cors)
 
 // Have express use the routers
 app.use(express.json())
