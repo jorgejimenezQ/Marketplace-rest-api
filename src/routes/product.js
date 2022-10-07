@@ -242,6 +242,7 @@ router.get('/products/:itemNumber/images', async (req, res) => {
 // Get product by query
 // {{url}}/tasks?sortBy=createdAt:desc&completed=false
 router.get('/products', async (req, res) => {
+    console.log(req.query)
     // Get the query & prepare it
     let { query, limit, skip, sortBy } = req.query
     if (query === undefined) {
@@ -256,11 +257,13 @@ router.get('/products', async (req, res) => {
         let products
         if (query === '') {
             products = await Product.find()
+                .limit(+limit)
+                .exec()
         } else {
             // console.log(new RegExp(reg))
             products = await Product.find({
                 description: { $regex: new RegExp(reg), $options: 'i' },
-            })
+            }).limit(+limit)
         }
 
         // Add the products to the response

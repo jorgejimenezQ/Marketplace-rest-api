@@ -171,7 +171,6 @@ productSchema.methods.toProductBlock = function (owner) {
 
  */
 productSchema.statics.toProductBlockArray = async (arr) => {
-    console.log(arr)
     const prodBlocks = []
     let owner
     await Promise.all(
