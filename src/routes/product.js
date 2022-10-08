@@ -242,17 +242,17 @@ router.get('/products/:itemNumber/images', async (req, res) => {
 // Get product by query
 // {{url}}/tasks?sortBy=createdAt:desc&completed=false
 router.get('/products', async (req, res) => {
-    console.log(req.query)
     // Get the query & prepare it
     let { query, limit, skip, sortBy } = req.query
+    let reg
     if (query === undefined) {
         query = ''
     } else {
         query = query.replace('*', '')
         query = query.replace('_', '|')
-        const reg = `^(${query})$`
+        reg = `^(${query})$`
     }
-
+    console.log(new RegExp(reg))
     try {
         let products
         if (query === '') {
@@ -271,7 +271,7 @@ router.get('/products', async (req, res) => {
 
         res.send(res.products)
     } catch (e) {
-        res.status(400).send({ error: 'Something went wrong' })
+        res.status(400).send({ error: 'Something went wrong', stack: e })
     }
 })
 

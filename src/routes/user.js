@@ -188,6 +188,7 @@ router.get('/users/:username/products', async (req, res) => {
 
         // Add the username to the object and send
         const products = user.products
+
         products.owner = user.username
         res.send({ user, products })
     } catch (e) {

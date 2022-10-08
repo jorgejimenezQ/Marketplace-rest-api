@@ -103,7 +103,9 @@ productSchema.methods.toJSON = function () {
     result.category = product.category
     result.itemNumber = product.itemNumber
     result.description = product.description
-
+    result.sold = product.sold
+    result.dataSold = product.dataSold
+    result.createdAt = product.createdAt
     return result
 }
 
@@ -154,6 +156,7 @@ productSchema.methods.toProductBlock = function (owner) {
             username: owner.username,
             image: owner.imagePath.name,
         },
+        owner: owner.username,
         images: this.imagePaths,
         name: this.name,
         condition: this.condition,
@@ -162,6 +165,7 @@ productSchema.methods.toProductBlock = function (owner) {
         itemNumber: this.itemNumber,
         description: this.description,
         sold: this.sold,
+        createdAt: this.createdAt,
     }
 }
 
