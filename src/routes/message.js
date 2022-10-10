@@ -72,7 +72,7 @@ router.post('/messages', authenticate, async (req, res) => {
         await msgGroup.save(product)
 
         // Create a user convo for each user
-        await UserConversation.createUserConversation(
+        const conversation = await UserConversation.createUserConversation(
             req.user._id,
             recipient._id,
             product._id,
@@ -88,7 +88,10 @@ router.post('/messages', authenticate, async (req, res) => {
         })
         await message.save()
 
-        res.send(message.toMessageBlock(req.user))
+        res.send({
+            convId: conversation._id,
+            message: message.toMessageBlock(req.user),
+        })
     } catch (e) {
         res.status(500).send({
             error: 'Something went wrong',
@@ -105,7 +108,6 @@ router.post('/messages/:conversationId', authenticate, async (req, res) => {
             user: req.user._id,
             _id: req.params.conversationId,
         })
-
         if (!conv || conv.deleted) {
             return res.status(500).send({
                 error: 'There was an error creating or authenticating the conversation.',

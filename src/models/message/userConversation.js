@@ -64,7 +64,7 @@ schema.statics.createUserConversation = async (
     await userConv2.save()
 
     if (!userConv1 || !userConv2) throw new Error('Something Went Wrong')
-    return
+    return userConv1
 }
 
 const UserConversation = mongoose.model('UserConversation', schema)
