@@ -87,6 +87,7 @@ router.post('/messages', authenticate, async (req, res) => {
             product: product._id,
         })
         await message.save()
+        await message.populate('owner')
 
         res.send({
             convId: conversation._id,
@@ -129,6 +130,7 @@ router.post('/messages/:conversationId', authenticate, async (req, res) => {
         })
 
         await message.save()
+        await message.populate('product')
 
         // Let the user the other user has deleted the conversation
         const responseBlock = !otherUserConv.deleted
@@ -269,6 +271,31 @@ router.get('/messages/:conversationId', authenticate, async (req, res) => {
         })
     }
 })
+
+// Get all conversations posted for a product
+router.get(
+    '/messages/conversations/:itemNumber',
+    authenticate,
+    async (req, res) => {
+        try {
+            // Get the product's itemNumber
+            const product = await Product.findOne({
+                itemNumber: req.params.itemNumber,
+                owner: req.user._id,
+            })
+
+            // Get conversations for this product
+            const conversations = await UserConversation.find({
+                product: product._id,
+                user: req.user._id,
+            }).populate(['user', 'otherUser', 'product'])
+
+            res.send(conversations)
+        } catch (e) {
+            res.status(500).send({ error: e.message })
+        }
+    }
+)
 
 // Read a message. Send a message block to the
 // client. See the above route's comment.

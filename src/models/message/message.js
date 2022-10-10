@@ -52,7 +52,7 @@ messageSchema.methods.toMessageBlock = function (owner) {
         dateCreated: this.createdAt,
         isRead: this.isRead,
         // owner: this.owner,
-        product: this.product,
+        product: { itemNumber: this.product.itemNumber },
     }
 }
 
