@@ -132,7 +132,7 @@ router.post('/messages/:conversationId', authenticate, async (req, res) => {
 
         // Let the user the other user has deleted the conversation
         const responseBlock = !otherUserConv.deleted
-            ? message.toMessageBlock(req.user)
+            ? { convId: conv._id, message: message.toMessageBlock(req.user) }
             : {
                   ...message.toMessageBlock(req.user),
                   otherUserDeletedConversation: true,
