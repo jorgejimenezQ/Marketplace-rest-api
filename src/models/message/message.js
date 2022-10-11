@@ -42,10 +42,12 @@ const messageSchema = new mongoose.Schema(
 
 messageSchema.methods.toMessageBlock = function (owner) {
     return {
-        owner: {
-            username: owner.username,
-            image: owner.imagePath.name,
-        },
+        owner: owner.username
+            ? {
+                  username: owner.username,
+                  image: owner.imagePath.name,
+              }
+            : owner,
         // messageId: this._id,
         // messageGroup: this.messageGroup._id,
         message: this.messageBody,

@@ -220,6 +220,35 @@ router.get('/messages/conversations', authenticate, async (req, res) => {
     }
 })
 
+/**
+ * Returns all the messages with a specific product
+ */
+router.get('/messages/product/:itemNumber', authenticate, async (req, res) => {
+    try {
+        // Find the product with the itemNumber
+        const product = await Product.findOne({
+            itemNumber: req.params.itemNumber,
+        })
+
+        if (!product) {
+            return res.status(404).send({
+                error: 'The product was not found',
+            })
+        }
+
+        // Find all messages with this product
+        const messages = await Message.find({ product: product._id })
+            .populate(['owner', 'product'])
+            .sort({ createdAt: 'desc' })
+        console.log(messages)
+
+        // Create an array of message blocks
+        res.send(messages)
+    } catch (error) {
+        res.status(400).send({ error: error.message })
+    }
+})
+
 // Get all messages belonging to a conversation.
 // Returns an array of message blocks to the client
 router.get('/messages/:conversationId', authenticate, async (req, res) => {
