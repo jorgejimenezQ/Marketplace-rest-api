@@ -49,7 +49,7 @@ messageSchema.methods.toMessageBlock = function (owner) {
               }
             : owner,
         // messageId: this._id,
-        // messageGroup: this.messageGroup._id,
+        messageGroup: this.messageGroup._id,
         message: this.messageBody,
         dateCreated: this.createdAt,
         isRead: this.isRead,
@@ -67,6 +67,8 @@ messageSchema.methods.toJSON = function () {
     result.message = msgObj.messageBody
     result.dateCreated = msgObj.createdAt
     result.isRead = msgObj.isRead
+
+    result.messageGroup = msgObj.messageGroup
 
     result.owner = {
         username: msgObj.owner.username,
