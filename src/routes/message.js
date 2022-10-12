@@ -102,6 +102,61 @@ router.post('/messages', authenticate, async (req, res) => {
 })
 
 // Post a message in an existing conversation
+router.post(
+    '/messages/create/:messageGroup',
+    authenticate,
+    async (req, res) => {
+        try {
+            // Find the conversation with the authenticated user and the conversationId
+            const conv = await UserConversation.findOne({
+                user: req.user._id,
+                messageGroup: req.params.messageGroup,
+            })
+            if (!conv || conv.deleted) {
+                return res.status(500).send({
+                    error: 'There was an error creating or authenticating the conversation.',
+                })
+            }
+
+            const otherUserConv = await UserConversation.findOne({
+                user: conv.otherUser,
+                messageGroup: conv.messageGroup,
+            })
+
+            // Create a message with the same message group as
+            // as the conversation
+            const message = new Message({
+                owner: req.user._id,
+                messageBody: req.body.messageBody,
+                messageGroup: conv.messageGroup,
+                product: conv.product,
+            })
+
+            await message.save()
+            await message.populate('product')
+
+            // Let the user the other user has deleted the conversation
+            const responseBlock = !otherUserConv.deleted
+                ? {
+                      convId: conv._id,
+                      message: message.toMessageBlock(req.user),
+                  }
+                : {
+                      ...message.toMessageBlock(req.user),
+                      otherUserDeletedConversation: true,
+                  }
+
+            res.send(responseBlock)
+        } catch (e) {
+            res.status(400).send({
+                error: 'Something went wrong',
+                errorMessage: e.message,
+            })
+        }
+    }
+)
+
+// Post a message in an existing conversation
 router.post('/messages/:conversationId', authenticate, async (req, res) => {
     try {
         // Find the conversation with the authenticated user and the conversationId
