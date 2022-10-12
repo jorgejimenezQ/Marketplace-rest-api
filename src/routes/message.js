@@ -240,7 +240,6 @@ router.get('/messages/product/:itemNumber', authenticate, async (req, res) => {
         const messages = await Message.find({ product: product._id })
             .populate(['owner', 'product'])
             .sort({ createdAt: 'desc' })
-        console.log(messages)
 
         // Create an array of message blocks
         res.send(messages)
@@ -248,6 +247,31 @@ router.get('/messages/product/:itemNumber', authenticate, async (req, res) => {
         res.status(400).send({ error: error.message })
     }
 })
+
+/**
+ * Returns all messages from a message group
+ */
+router.get(
+    '/messages/messageGroup/:messageGroupId',
+    authenticate,
+    async (req, res) => {
+        try {
+            // Find the messages with the message group id
+            const messages = await Message.find({
+                messageGroup: req.params.messageGroupId,
+            }).populate(['owner', 'product'])
+            if (!messages) {
+                return res.status(404).send({
+                    error: 'The messages were not found',
+                })
+            }
+
+            res.send(messages)
+        } catch (e) {
+            res.status(400).send({ error: e.message })
+        }
+    }
+)
 
 // Get all messages belonging to a conversation.
 // Returns an array of message blocks to the client

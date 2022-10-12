@@ -58,6 +58,32 @@ messageSchema.methods.toMessageBlock = function (owner) {
     }
 }
 
+messageSchema.methods.toMessageBlockConversation = async function (user) {
+    // Tack the conversation id to the response
+    const conversation = await UserConversation.findOne({
+        user: user._id,
+        messageGroup: this.messageGroup._id,
+    })
+
+    console.log('conversation', conversation)
+
+    return {
+        owner: owner.username
+            ? {
+                  username: owner.username,
+                  image: owner.imagePath.name,
+              }
+            : owner,
+        // messageId: this._id,
+        messageGroup: this.messageGroup._id,
+        message: this.messageBody,
+        dateCreated: this.createdAt,
+        isRead: this.isRead,
+        // owner: this.owner,
+        product: { itemNumber: this.product.itemNumber },
+    }
+}
+
 // Sanitize the data going out
 messageSchema.methods.toJSON = function () {
     const message = this
