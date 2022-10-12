@@ -259,7 +259,18 @@ router.get(
             // Find the messages with the message group id
             const messages = await Message.find({
                 messageGroup: req.params.messageGroupId,
-            }).populate(['owner', 'product'])
+            }).populate([
+                'owner',
+                'product',
+                {
+                    path: 'messageGroup',
+                    select: 'user1 user2',
+                    populate: [
+                        { path: 'user1', select: 'username' },
+                        { path: 'user2', select: 'username' },
+                    ],
+                },
+            ])
             if (!messages) {
                 return res.status(404).send({
                     error: 'The messages were not found',
