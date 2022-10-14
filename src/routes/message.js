@@ -56,6 +56,7 @@ router.post('/messages', authenticate, async (req, res) => {
         const product = await Product.findOne({
             itemNumber: req.body.itemNumber,
         })
+
         // Make sure the product's owner is the recipient
         if (recipient._id.toString() !== product.owner.toString()) {
             return res.status(500).send({
@@ -88,6 +89,9 @@ router.post('/messages', authenticate, async (req, res) => {
         })
         await message.save()
         await message.populate('owner')
+
+        console.log(product)
+        message.product = product
 
         res.send({
             convId: conversation._id,
@@ -260,7 +264,7 @@ router.get('/messages/conversations', authenticate, async (req, res) => {
             path: 'user otherUser product',
         })
 
-        // Create an array of conversatino blocks
+        // Create an array of conversation blocks
         const convBlocks = []
         userConvs.forEach((conv) => {
             convBlocks.push(conv.toConvBlock(conv.otherUser))
@@ -326,6 +330,7 @@ router.get(
                     ],
                 },
             ])
+
             if (!messages) {
                 return res.status(404).send({
                     error: 'The messages were not found',

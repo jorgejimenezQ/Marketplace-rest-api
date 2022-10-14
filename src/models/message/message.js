@@ -100,10 +100,11 @@ messageSchema.methods.toJSON = function () {
         username: msgObj.owner.username,
         image: msgObj.owner.imagePath.name,
     }
-    result.product = {
-        name: msgObj.product.name,
-        itemNumber: msgObj.product.itemNumber,
-    }
+    result.product = msgObj.product
+    // {
+    //     name: msgObj.product.name,
+    //     itemNumber: msgObj.product.itemNumber,
+    // }
     return result
 }
 
