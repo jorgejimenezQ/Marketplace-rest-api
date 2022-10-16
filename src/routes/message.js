@@ -297,7 +297,7 @@ router.get('/messages/product/:itemNumber', authenticate, async (req, res) => {
 
         // Find all messages with this product
         const messages = await Message.find({ product: product._id })
-            .populate(['owner', 'product'])
+            .populate(['owner', 'product', 'messageGroup'])
             .sort({ createdAt: 'desc' })
 
         // Create an array of message blocks
