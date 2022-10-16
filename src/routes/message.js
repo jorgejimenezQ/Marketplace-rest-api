@@ -405,7 +405,6 @@ router.get(
             // Get the product's itemNumber
             const product = await Product.findOne({
                 itemNumber: req.params.itemNumber,
-                owner: req.user._id,
             })
 
             // Get conversations for this product

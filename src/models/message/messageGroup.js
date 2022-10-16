@@ -29,6 +29,7 @@ msgGroupSchema.methods.toJSON = function () {
     result.id = group._id
     result.user1 = group.user1.toJSON()
     result.user2 = group.user2.toJSON()
+    result.deleted = groupObj.deleted
 
     return result
 }
