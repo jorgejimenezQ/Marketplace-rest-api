@@ -280,6 +280,47 @@ router.get('/messages/conversations', authenticate, async (req, res) => {
 })
 
 /**
+ * Takes an array of item numbers and returns the amount of messages per item number.
+ *
+ */
+router.get('/messages/count', authenticate, async (req, res) => {
+    try {
+        // Get the number of messages for each item number
+        const result = await Message.aggregate([
+            {
+                $match: {
+                    // product: { $in: itemNumbers },
+                    owner: req.user._id,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'product',
+                    foreignField: '_id',
+                    as: 'product',
+                },
+            },
+            {
+                $group: { _id: '$product', count: { $sum: 1 } },
+            },
+        ])
+
+        let count = await Message.populate(result, { path: 'itemNumber' })
+        count = count.map((c) => {
+            return { itemNumber: c._id[0].itemNumber, count: c.count }
+        })
+
+        res.send(count)
+    } catch (e) {
+        res.status(400).send({
+            error: 'Something went wrong',
+            errorMessage: e.message,
+        })
+    }
+})
+
+/**
  * Returns all the messages with a specific product
  */
 router.get('/messages/product/:itemNumber', authenticate, async (req, res) => {
