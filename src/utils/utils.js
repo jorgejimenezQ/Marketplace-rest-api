@@ -13,6 +13,8 @@ const statusCodes = {
     SERVICE_UNAVAILABLE: 503,
     NOT_FOUND: 404,
     UNAUTHORIZED: 401,
+    USERNAME_EXISTS: 100,
+    EMAIL_EXISTS: 101,
 }
 
 module.exports = { statusCodes, validateUpdate }

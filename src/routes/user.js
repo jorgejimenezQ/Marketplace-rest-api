@@ -29,13 +29,21 @@ router.post('/users', async (req, res) => {
         const duplicate = await User.findOne({ username: user.username })
         // Send the error back
         if (duplicate) {
-            return res.status(400).send({ error: 'Username already exists' })
+            return res.status(400).send({
+                error: 'Username already exists',
+                code: statusCodes.USERNAME_EXISTS,
+            })
         }
 
         // Check for duplicate email
         const duplicateEmail = await User.findOne({ email: user.email })
         if (duplicateEmail) {
-            return res.status(400).send({ error: 'Email already exists' })
+            return res
+                .status(400)
+                .send({
+                    error: 'Email already exists',
+                    code: statusCodes.EMAIL_EXISTS,
+                })
         }
 
         // Save the user
