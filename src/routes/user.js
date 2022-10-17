@@ -13,7 +13,7 @@ const authenticate = require('../middleware/auth.js')
 const User = require('../models/user/user.js')
 const Product = require('../models/product/product.js')
 const Message = require('../models/message/message.js')
-const statusCodes = require('../utils/utils.js')
+const { statusCodes } = require('../utils/utils.js')
 
 const router = new express.Router() // Router constructor
 /** ................................... */
@@ -38,12 +38,10 @@ router.post('/users', async (req, res) => {
         // Check for duplicate email
         const duplicateEmail = await User.findOne({ email: user.email })
         if (duplicateEmail) {
-            return res
-                .status(400)
-                .send({
-                    error: 'Email already exists',
-                    code: statusCodes.EMAIL_EXISTS,
-                })
+            return res.status(400).send({
+                error: 'Email already exists',
+                code: statusCodes.EMAIL_EXISTS,
+            })
         }
 
         // Save the user
