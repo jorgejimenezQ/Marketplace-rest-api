@@ -42,7 +42,7 @@ router.post('/products', authenticate, async (req, res) => {
         // SEND!!
         res.send(product)
     } catch (e) {
-        res.status(400).send('Unable to create product.')
+        res.status(400).send('Unable to create product.', e)
     }
 })
 
