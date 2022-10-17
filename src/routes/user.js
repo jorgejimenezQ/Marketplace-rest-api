@@ -25,6 +25,20 @@ router.post('/users', async (req, res) => {
     const user = new User(req.body)
 
     try {
+        // Check for duplicate username
+        const duplicate = await User.findOne({ username: user.username })
+        // Send the error back
+        if (duplicate) {
+            return res.status(400).send({ error: 'Username already exists' })
+        }
+
+        // Check for duplicate email
+        const duplicateEmail = await User.findOne({ email: user.email })
+        if (duplicateEmail) {
+            return res.status(400).send({ error: 'Email already exists' })
+        }
+
+        // Save the user
         await user.save()
         //TODO: Create a handler for user images
 
