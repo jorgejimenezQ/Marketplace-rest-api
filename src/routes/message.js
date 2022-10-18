@@ -111,17 +111,17 @@ router.post('/messages', authenticate, async (req, res) => {
  */
 router.post('/messages/count', authenticate, async (req, res) => {
     try {
-        // If the itemNumbers is not an array, return an error
-        if (!Array.isArray(req.body.itemNumbers)) {
-            return res.status(400).send({
-                error: 'The itemNumbers must be an array',
-            })
-        }
+        // // If the itemNumbers is not an array, return an error
+        // if (!Array.isArray(req.body.itemNumbers)) {
+        //     return res.status(400).send({
+        //         error: 'The itemNumbers must be an array',
+        //     })
+        // }
 
-        // If the itemNumbers is an empty array, return an empty array
-        if (req.body.itemNumbers.length === 0) {
-            return res.send([])
-        }
+        // // If the itemNumbers is an empty array, return an empty array
+        // if (req.body.itemNumbers.length === 0) {
+        //     return res.send([])
+        // }
 
         // Get all the product item itemNumbers
         const products = await Product.find({
