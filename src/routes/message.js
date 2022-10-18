@@ -105,6 +105,67 @@ router.post('/messages', authenticate, async (req, res) => {
     }
 })
 
+/**
+ * Takes an array of item numbers and returns the amount of messages per item number.
+ *
+ */
+router.post('/messages/count', authenticate, async (req, res) => {
+    try {
+        // If the itemNumbers is not an array, return an error
+        if (!Array.isArray(req.body.itemNumbers)) {
+            return res.status(400).send({
+                error: 'The itemNumbers must be an array',
+            })
+        }
+
+        // If the itemNumbers is an empty array, return an empty array
+        if (req.body.itemNumbers.length === 0) {
+            return res.send([])
+        }
+
+        // Get all the product item itemNumbers
+        const products = await Product.find({
+            itemNumber: { $in: req.body.itemNumbers },
+        })
+        console.log(products)
+
+        const itemNumbers = products.map((product) => product._id)
+
+        // Get the number of messages for each item number
+        const result = await Message.aggregate([
+            {
+                $match: {
+                    product: { $in: itemNumbers },
+                    owner: req.user._id,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'product',
+                    foreignField: '_id',
+                    as: 'product',
+                },
+            },
+            {
+                $group: { _id: '$product', count: { $sum: 1 } },
+            },
+        ])
+
+        let count = await Message.populate(result, { path: 'itemNumber' })
+        count = count.map((c) => {
+            return { itemNumber: c._id[0].itemNumber, count: c.count }
+        })
+
+        res.send(count)
+    } catch (e) {
+        res.status(400).send({
+            error: 'Something went wrong',
+            errorMessage: e.message,
+        })
+    }
+})
+
 // Post a message in an existing conversation
 router.post(
     '/messages/create/:messageGroup',
@@ -271,66 +332,6 @@ router.get('/messages/conversations', authenticate, async (req, res) => {
         })
 
         res.send(convBlocks)
-    } catch (e) {
-        res.status(400).send({
-            error: 'Something went wrong',
-            errorMessage: e.message,
-        })
-    }
-})
-
-/**
- * Takes an array of item numbers and returns the amount of messages per item number.
- *
- */
-router.get('/messages/count', authenticate, async (req, res) => {
-    try {
-        // If the itemNumbers is not an array, return an error
-        if (!Array.isArray(req.body.itemNumbers)) {
-            return res.status(400).send({
-                error: 'The itemNumbers must be an array',
-            })
-        }
-
-        // If the itemNumbers is an empty array, return an empty array
-        if (req.body.itemNumbers.length === 0) {
-            return res.send([])
-        }
-
-        // Get all the product item itemNumbers
-        const products = await Product.find({
-            itemNumber: { $in: req.body.itemNumbers },
-        })
-
-        const itemNumbers = products.map((product) => product._id)
-
-        // Get the number of messages for each item number
-        const result = await Message.aggregate([
-            {
-                $match: {
-                    product: { $in: itemNumbers },
-                    owner: req.user._id,
-                },
-            },
-            {
-                $lookup: {
-                    from: 'products',
-                    localField: 'product',
-                    foreignField: '_id',
-                    as: 'product',
-                },
-            },
-            {
-                $group: { _id: '$product', count: { $sum: 1 } },
-            },
-        ])
-
-        let count = await Message.populate(result, { path: 'itemNumber' })
-        count = count.map((c) => {
-            return { itemNumber: c._id[0].itemNumber, count: c.count }
-        })
-
-        res.send(count)
     } catch (e) {
         res.status(400).send({
             error: 'Something went wrong',
