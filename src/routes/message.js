@@ -125,11 +125,12 @@ router.post('/messages/count', authenticate, async (req, res) => {
 
         // Get all the product item itemNumbers
         const products = await Product.find({
-            itemNumber: { $in: req.body.itemNumbers },
+            owner: req.user._id,
         })
-        console.log(products)
 
         const itemNumbers = products.map((product) => product._id)
+
+        console.log(itemNumbers)
 
         // Get the number of messages for each item number
         const result = await Message.aggregate([
