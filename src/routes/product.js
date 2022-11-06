@@ -252,18 +252,24 @@ router.get('/products', async (req, res) => {
         query = query.replace('_', '|')
         reg = `^(${query})$`
     }
-    console.log(new RegExp(reg))
     try {
         let products
         if (query === '') {
             products = await Product.find()
+                .sort({ name: 1 })
                 .limit(+limit)
+                .skip(+skip)
                 .exec()
         } else {
             // console.log(new RegExp(reg))
             products = await Product.find({
                 description: { $regex: new RegExp(reg), $options: 'i' },
-            }).limit(+limit)
+            })
+                .sort({ name: 1 })
+                .limit(+limit)
+
+                .skip(+skip)
+                .exec()
         }
 
         // Add the products to the response
@@ -274,5 +280,7 @@ router.get('/products', async (req, res) => {
         res.status(400).send({ error: 'Something went wrong', stack: e })
     }
 })
+
+// Get products list with pagination and sorting options from the query parameters of the request
 
 module.exports = router
