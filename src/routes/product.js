@@ -257,7 +257,7 @@ router.get('/products', async (req, res) => {
         let products
         if (query === '') {
             products = await Product.find()
-                .sort({ createdAt: -1 })
+                .sort({ createdAt: 1 })
                 .skip(+skip)
                 .limit(+limit)
         } else {
@@ -265,7 +265,7 @@ router.get('/products', async (req, res) => {
             products = await Product.find({
                 description: { $regex: new RegExp(reg), $options: 'i' },
             })
-                .sort({ createdAt: -1 })
+                .sort({ createdAt: 1 })
                 .skip(+skip)
                 .limit(+limit)
         }
