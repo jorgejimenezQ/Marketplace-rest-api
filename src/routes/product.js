@@ -244,6 +244,7 @@ router.get('/products/:itemNumber/images', async (req, res) => {
 router.get('/products', async (req, res) => {
     // Get the query & prepare it
     let { query, limit, skip, sortBy } = req.query
+    console.log(req.query)
     let reg
     if (query === undefined) {
         query = ''
@@ -256,20 +257,17 @@ router.get('/products', async (req, res) => {
         let products
         if (query === '') {
             products = await Product.find()
-                .sort({ name: 1 })
+                .sort({ createdAt: -1 })
+                .skip(+skip * +limit)
                 .limit(+limit)
-                .skip(+skip)
-                .exec()
         } else {
             // console.log(new RegExp(reg))
             products = await Product.find({
                 description: { $regex: new RegExp(reg), $options: 'i' },
             })
-                .sort({ name: 1 })
+                .sort({ createdAt: -1 })
+                .skip(+skip * +limit)
                 .limit(+limit)
-
-                .skip(+skip)
-                .exec()
         }
 
         // Add the products to the response
