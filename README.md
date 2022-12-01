@@ -10,4 +10,4 @@ Check it out!
 The documentation was created with OpenAPI Specification and rendered
 with [ Redocly ](https://redocly.com):
 
--   [Documentation](https://jorge-marketplace-api.herokuapp.com/api/docs)
+-   [Documentation](https://market-api-tuc6.onrender.com/api/docs)
